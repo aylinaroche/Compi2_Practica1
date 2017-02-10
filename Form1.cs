@@ -1,0 +1,176 @@
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Irony.Parsing;
+
+namespace SBScript
+{
+    public partial class Form1 : Form
+    {
+        String ruta = "";
+        ArrayList listaRuta = new ArrayList();
+        int num = 0;
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnAgregarPestania_Click(object sender, EventArgs e)
+        {
+            tabControl1.TabPages.Add(nombrePestania());
+            foreach (TabPage tab in tabControl1.TabPages)
+            {
+                RichTextBox rich = new RichTextBox();
+                rich.Name = "Tab";
+                rich.Width = 420;
+                rich.Height = 230;
+                
+                String ruta = "";
+                tab.Controls.Add(rich);
+              //  tab.Controls.Add(ruta);
+            }
+        }
+
+        public String nombrePestania()
+        {
+            num += 1;
+            String nombre = "Doc"+num;
+            return nombre;
+        }
+        private void btnElminarPestania_Click(object sender, EventArgs e)
+        {
+
+            tabControl1.TabPages.RemoveAt(tabControl1.SelectedIndex);
+        }
+
+        private void btnAbrir_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+
+            openFileDialog1.InitialDirectory = "C:\\Users\\Aylin\\Documents";
+            openFileDialog1.Filter = "txt files (*.txt)|*.txt| SBS files (*.*)|*.sbs";
+            openFileDialog1.FilterIndex = 2;
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                System.IO.StreamReader sr = new System.IO.StreamReader(openFileDialog1.FileName);
+                // MessageBox.Show(openFileDialog1.FileName);
+                ruta = openFileDialog1.FileName;
+                var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+                rich.Text = sr.ReadToEnd();
+                sr.Close();
+            }
+
+            txtConsola.Text += ">> Archivo abierto correctamente.\n";
+            Pestania p = new Pestania();
+            p.nombre = tabControl1.SelectedTab.ToString();
+            p.ruta = ruta;
+            listaRuta.Add(p);
+        }
+
+        private void btnGuardar_Click(object sender, EventArgs e)
+        {
+            String rutaAux = "";
+            for(int i=0; i < listaRuta.Count; i++)
+            {
+                Pestania p = (Pestania) listaRuta[i];
+                if(p.nombre == tabControl1.SelectedTab.ToString())
+                {
+                    rutaAux = p.ruta;
+                }
+            }
+
+
+            if (rutaAux != "")
+            {
+                System.IO.FileInfo fi = new System.IO.FileInfo(ruta);
+                try
+                {
+                    fi.Delete();
+                }
+                catch (System.IO.IOException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+
+                System.IO.StreamWriter streamWriter = new StreamWriter(ruta, true);
+                var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+                streamWriter.WriteLine(rich.Text);
+                streamWriter.Close();
+                txtConsola.Text += ">> Archivo guardado correctamente.\n";
+            }
+            else
+            {
+                SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+                saveFileDialog1.DefaultExt = "*.sbs";
+                saveFileDialog1.Filter = "sbs Files|*.sbs";
+                saveFileDialog1.RestoreDirectory = true;
+
+                if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK && saveFileDialog1.FileName.Length > 0)
+                {
+                    var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+                    rich.SaveFile(saveFileDialog1.FileName, RichTextBoxStreamType.PlainText);
+                }
+                txtConsola.Text += ">> Archivo guardado correctamente.\n";
+            }
+        }
+
+        private void btnGuardarComo_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+            saveFileDialog1.DefaultExt = "*.sbs";
+            saveFileDialog1.Filter = "sbs Files|*.sbs";
+            saveFileDialog1.RestoreDirectory = true;
+
+            if (saveFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK && saveFileDialog1.FileName.Length > 0)
+            {
+                var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+                rich.SaveFile(saveFileDialog1.FileName, RichTextBoxStreamType.PlainText);
+            }
+            txtConsola.Text += ">> Guardar archivo como.\n";
+        }
+
+        class Pestania
+        {
+            public String nombre;
+            public String ruta;
+        }
+
+        private void btnEjecutar_Click(object sender, EventArgs e)
+        {
+            var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+          //  MessageBox.Show(rich.Text);
+            ParseTreeNode resultado = Analizador.analizar(rich.Text);
+
+            if (resultado != null)
+            {
+                MessageBox.Show("El arbol fue construido correctamente");
+                PrimerRecorrido.action(resultado);
+                //             imprimirVariables();
+                //imprimir();
+                
+            }
+            else
+            {
+                MessageBox.Show("ERROR: Deberia de revisar la cadena de entrada");
+            }
+
+        }
+    }
+}
