@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Irony.Parsing;
 using System.Diagnostics;
 using System.Collections;
+using System.IO;
 
 namespace SBScript
 {
@@ -16,44 +17,74 @@ namespace SBScript
         public static Boolean concatenar = false;
         //
         public static Stack pilaAmbito = new Stack();
-        
-        public static String action(ParseTreeNode node)
+
+        public static String action(ParseTreeNode nodo)
         {
             String result = null;
             String variables = "";
-            switch (node.Term.Name.ToString())
+            switch (nodo.Term.Name.ToString())
             {
+                case "INICIO":
+                    {
+                        if (nodo.ChildNodes.Count == 1)
+                        {
+                            action(nodo.ChildNodes[0]);
+                        }else if (nodo.ChildNodes.Count == 2)
+                        {
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[1]);
+                        }
+                        break;
+                    }
                 case "ENTRADA":
                     {
-                       // MessageBox.Show("entrada");
-                        if (node.ChildNodes.Count == 1)
+                        // MessageBox.Show("entrada");
+                        if (nodo.ChildNodes.Count == 1)
                         {
                             pilaAmbito.Push("Global");
-                            action(node.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
                         break;
                     }
                 case "ENCABEZADO":
                     {
                         //MessageBox.Show("encabezado");
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            action(node.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
-                        else if (node.ChildNodes.Count == 2)
+                        else if (nodo.ChildNodes.Count == 2)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[1]);
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
                 case "C":
-                    MessageBox.Show("c");
-                    if (node.ChildNodes.Count == 2)
+                    //MessageBox.Show("c");
+                    if (nodo.ChildNodes.Count == 2)
                     {
-                        //action(node.ChildNodes[0]);
+                        String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+
+                        if (dato[1] == "(numero)")
+                        {
+                            Listas.incerteza = Int32.Parse(dato[0]);
+                        }
+                        else if (dato[1] == "(cadena)")
+                        {
+                            String ruta = dato[0];
+                            if (Directory.Exists(ruta))
+                            {
+                                Listas.ruta = ruta;
+                            }
+                            else
+                            {
+                                Reporte.agregarError("No existe ruta: " + ruta, "Error General", 0, 0);
+                                Listas.ruta = "C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript";
+                            }
+                        }
                     }
-                    else if (node.ChildNodes.Count == 3)
+                    else if (nodo.ChildNodes.Count == 3)
                     {
                         //action(node.ChildNodes[0]);
                     }
@@ -62,84 +93,104 @@ namespace SBScript
                 case "TIPO":
                     {
                         // MessageBox.Show("DATA");
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            String[] numero = (node.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
                             result = numero[0];
-                            MessageBox.Show(result);
+
                         }
                         break;
                     }
                 case "DECLARACION":
                     {
-                        //   MessageBox.Show("AtributoDATA");
-                        if (node.ChildNodes.Count == 3)
+                        //   MessageBox.Show("DECLARACION");
+                        if (nodo.ChildNodes.Count == 3)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[1]);
+                            String tipo = action(nodo.ChildNodes[0]);
+                            String vars = action(nodo.ChildNodes[1]);
+                            String[] var = (vars.Split(','));
+
+                            for (int i = 0; i < var.Length - 1; i++)
+                            {
+                                Variable v = new Variable();
+                                v.tipo = tipo;
+                                v.nombre = var[i];
+                                Listas.listaVariables.Add(v);
+                            }
                         }
-                        else if (node.ChildNodes.Count == 5)
+                        else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[3]);
+                            String tipo = action(nodo.ChildNodes[0]);
+                            String vars = action(nodo.ChildNodes[1]);
+                            String[] var = (vars.Split(','));
+                            String asig = action(nodo.ChildNodes[3]);
+
+                            for (int i = 0; i < var.Length - 1; i++)
+                            {
+                                Variable v = new Variable();
+                                v.tipo = tipo;
+                                v.nombre = var[i];
+                                v.valor = asig;
+                                Listas.listaVariables.Add(v);
+                            }
                         }
                         break;
                     }
                 case "VAR":
                     {
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            String[] numero = (node.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
                             variables += numero[0] + ",";
                             result = variables;
                         }
-                        else if (node.ChildNodes.Count == 3)
+                        else if (nodo.ChildNodes.Count == 3)
                         {
-                            result = action(node.ChildNodes[0]);
-                            String[] dato = node.ChildNodes.ElementAt(2).ToString().Split(' ');
+                            result = action(nodo.ChildNodes[0]);
+                            String[] dato = nodo.ChildNodes.ElementAt(2).ToString().Split(' ');
                             result += dato[0] + ",";
                         }
                         break;
                     }
                 case "ASIGNACION":
                     {
-                        if (node.ChildNodes.Count == 3)
+                        if (nodo.ChildNodes.Count == 3 || nodo.ChildNodes.Count == 4)
                         {
-                            action(node.ChildNodes[2]);
-                        }
-                        else if (node.ChildNodes.Count == 4)
-                        {
-                            action(node.ChildNodes[2]);
+                            String id = action(nodo.ChildNodes[0]);
+                            String asig = action(nodo.ChildNodes[2]);
+
+                            Variable v = new Variable();
+                            //  v.tipo = tipo;
+                            //v.nombre = var[i];
+                            v.valor = asig;
+                            Listas.listaVariables.Add(v);
                         }
                         break;
                     }
                 case "MOSTRAR":
                     {
-                        if (node.ChildNodes.Count == 5)
+                        if (nodo.ChildNodes.Count == 5)
                         {
-                            action(node.ChildNodes[2]);
+                            action(nodo.ChildNodes[2]);
                         }
                         break;
                     }
                 case "DatosIMPRIMIR":
                     {
 
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            action(node.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
-                        else if (node.ChildNodes.Count == 3)
+                        else if (nodo.ChildNodes.Count == 3)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[2]);
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[2]);
                         }
 
                         // MessageBox.Show("aITEM");
                         /*    if (node.ChildNodes.Count == 1)
-                            {
-                                action(node.ChildNodes[0]);
-                            }
-                            else if (node.ChildNodes.Count == 4)
+                             else if (node.ChildNodes.Count == 4)
                             {
                                 String[] dato = (node.ChildNodes.ElementAt(0).ToString().Split(' '));
                                 String id1 = dato[0];
@@ -175,7 +226,7 @@ namespace SBScript
                 case "DIBUJAR":
                     {
                         // MessageBox.Show("OpcionITEM");
-                        if (node.ChildNodes.Count == 5)
+                        if (nodo.ChildNodes.Count == 5)
                         {
                             //result = action(node.ChildNodes[0]);
                         }
@@ -184,25 +235,25 @@ namespace SBScript
                 case "INSTRUCCIONES":
                     {
                         //  MessageBox.Show("ATRIBUTO");
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            action(node.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
-                        else if (node.ChildNodes.Count == 2)
+                        else if (nodo.ChildNodes.Count == 2)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[1]);
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
                 case "INSTRUCCION":
                     {
                         //MessageBox.Show("TipoITEM");
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            action(node.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
-                        else if (node.ChildNodes.Count == 2)
+                        else if (nodo.ChildNodes.Count == 2)
                         {
                             //action(node.ChildNodes[0]);
                         }
@@ -210,119 +261,90 @@ namespace SBScript
                     }
                 case "METODO":
                     {
-                        if (node.ChildNodes.Count == 6)
+                        Metodo_Funcion.parametros.Clear();
+                        if (nodo.ChildNodes.Count == 6)
                         {
-                         //   action(node.ChildNodes[2]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Metodo_Funcion.agregarMF("Void", dato[0], "", null, null);
                         }
-                        else if (node.ChildNodes.Count == 7)
+                        else if (nodo.ChildNodes.Count == 7)
                         {
-                            action(node.ChildNodes[5]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[5], null);
                         }
-                        else if(node.ChildNodes.Count == 8)
+                        else if (nodo.ChildNodes.Count == 8)
                         {
-                            action(node.ChildNodes[3]);
-                            action(node.ChildNodes[6]);
+                            action(nodo.ChildNodes[3]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[6], Metodo_Funcion.parametros);
                         }
                         break;
                     }
                 case "FUNCION":
                     {
-                        if (node.ChildNodes.Count == 6)
+                        Metodo_Funcion.parametros.Clear();
+                        if (nodo.ChildNodes.Count == 6)
                         {
-                         //   action(node.ChildNodes[0]);
+                            String tipo = action(nodo.ChildNodes[0]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Metodo_Funcion.agregarMF(tipo, dato[0], "", null, null);
                         }
-                        else if (node.ChildNodes.Count == 7)
+                        else if (nodo.ChildNodes.Count == 7)
                         {
-                            //action(node.ChildNodes[0]);
-                            //action(node.ChildNodes[1]);
+                            String tipo = action(nodo.ChildNodes[0]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            if (nodo.ChildNodes[3].Term.Name.ToString() == "varPARAMETRO")
+                            {
+                                action(nodo.ChildNodes[3]);
+                                Metodo_Funcion.agregarMF(tipo, dato[0], "", null, Metodo_Funcion.parametros);
+                            }
+                            else
+                            {
+                                Metodo_Funcion.agregarMF(tipo, dato[0], "", nodo.ChildNodes[5], null);
+                            }
+                           
                         }
-                        else if (node.ChildNodes.Count == 8)
+                        else if (nodo.ChildNodes.Count == 8)
                         {
-                            action(node.ChildNodes[3]);
-                            action(node.ChildNodes[6]);
+                            action(nodo.ChildNodes[3]);
+                            String tipo = action(nodo.ChildNodes[0]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Metodo_Funcion.agregarMF(tipo, dato[0], "", nodo.ChildNodes[6], Metodo_Funcion.parametros);
                         }
 
                         break;
                     }
                 case "varPARAMETRO":
                     {
-                        if (node.ChildNodes.Count == 2) //
+                        if (nodo.ChildNodes.Count == 2) //
                         {
-                            action(node.ChildNodes[0]);
+                            String t = action(nodo.ChildNodes[0]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Metodo_Funcion.agregarParametro(t, dato[0]);
                         }
-                        else if (node.ChildNodes.Count == 4) 
+                        else if (nodo.ChildNodes.Count == 4)
                         {
-                            action(node.ChildNodes[0]);
-                            action(node.ChildNodes[2]);
+                            action(nodo.ChildNodes[0]);
+                            String t =action(nodo.ChildNodes[2]);
+                            String[] dato = (nodo.ChildNodes.ElementAt(3).ToString().Split(' '));
+                            Metodo_Funcion.agregarParametro(t, dato[0]);
                         }
-
-
-                     /*   variables = "";
-                        //  MessageBox.Show("aCONFIG");
-                        if (node.ChildNodes.Count == 1) //
-                        {
-                            action(node.ChildNodes[0]);
-                        }
-                        else if (node.ChildNodes.Count == 2) //Asignacion de variables
-                        {
-                            String vars = action(node.ChildNodes[0]);
-                            String[] var = (vars.Split(','));
-                            // action(node.ChildNodes[1]);
-                            String asig = action(node.ChildNodes[1]);
-
-                            for (int i = 0; i < var.Length - 1; i++)
-                            {
-                                Boolean existe = false;
-                                for (int j = 0; j < Listas.listaVariables.Count; j++)
-                                {
-                                    Variable v = (Variable)Listas.listaVariables[j];
-                                    String varNombre = v.nombre + " ";
-                                    if (v.nombre == var[i] || varNombre == var[i])
-                                    {
-                                        existe = true;
-                                        v.valor = asig;
-                                    }
-                                }
-                                if (existe == false)
-                                {
-                                    MessageBox.Show("ER");
-                                }
-
-                            }
-                        }
-                        else if (node.ChildNodes.Count == 3) //Creacion de variables
-                        {
-                            String tipo = action(node.ChildNodes[0]);
-                            String vars = action(node.ChildNodes[1]);
-                            String[] var = (vars.Split(','));
-                            String asig = action(node.ChildNodes[2]);
-
-                            for (int i = 0; i < var.Length - 1; i++)
-                            {
-                                Variable v = new Variable();
-                                v.tipo = tipo;
-                                v.nombre = var[i];
-                                v.valor = asig;
-                                Listas.listaVariables.Add(v);
-                            }
-                                                   }*/
-                        break;
+ break;
                     }
                 case "RETORNAR":
                     {
                         // MessageBox.Show("TIPO");
-                        if (node.ChildNodes.Count == 3)
+                        if (nodo.ChildNodes.Count == 3)
                         {
-                            action(node.ChildNodes[1]);
+                            action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
                 case "MAIN":
                     {
-                        //  MessageBox.Show("VAR");
-                        if (node.ChildNodes.Count == 6)
+                        if (nodo.ChildNodes.Count == 6)
                         {
-                            action(node.ChildNodes[4]);
+                            Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], null);
                         }
                         break;
                     }
@@ -330,20 +352,20 @@ namespace SBScript
                 case "LLAMADA":
                     {
                         //MessageBox.Show("ASIGNACION");
-                        if (node.ChildNodes.Count == 4)
+                        if (nodo.ChildNodes.Count == 4)
                         {
-                            action(node.ChildNodes[2]);
+                            action(nodo.ChildNodes[2]);
                         }
-                        else if (node.ChildNodes.Count == 5)
+                        else if (nodo.ChildNodes.Count == 5)
                         {
-                            result = action(node.ChildNodes[2]);
+                            result = action(nodo.ChildNodes[2]);
                         }
                         break;
                     }
                 case "TipoPARAMETRO":
                     {
                         //MessageBox.Show("IMPRIMIR");
-                        if (node.ChildNodes.Count == 3)
+                        if (nodo.ChildNodes.Count == 3)
                         {
 
                         }
@@ -352,167 +374,119 @@ namespace SBScript
                 case "SI":
                     {
                         // MessageBox.Show("DatosIMPRIMIR");
-                        if (node.ChildNodes.Count == 7)
+                        if (nodo.ChildNodes.Count == 7)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[5]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[5]);
                         }
-                        else if (node.ChildNodes.Count == 8)
+                        else if (nodo.ChildNodes.Count == 8)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[5]);
-                            action(node.ChildNodes[7]); 
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[5]);
+                            action(nodo.ChildNodes[7]);
                         }
                         break;
                     }
                 case "ELSE":
                     {
                         //MessageBox.Show("POSICION");
-                        if (node.ChildNodes.Count == 2)
+                        if (nodo.ChildNodes.Count == 2)
                         {
-                            action(node.ChildNodes[1]);
+                            action(nodo.ChildNodes[1]);
                         }
-                        else if (node.ChildNodes.Count == 4)
+                        else if (nodo.ChildNodes.Count == 4)
                         {
-                            action(node.ChildNodes[2]);
+                            action(nodo.ChildNodes[2]);
                         }
                         break;
                     }
                 case "CICLO":
                     {
-                        if (node.ChildNodes.Count == 7)
+                        if (nodo.ChildNodes.Count == 7)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[5]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[5]);
                         }
                         break;
                     }
                 case "SWITCH":
                     {
-                        if (node.ChildNodes.Count == 5)
+                        if (nodo.ChildNodes.Count == 5)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[4]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[4]);
                         }
-                        else if (node.ChildNodes.Count == 6)
+                        else if (nodo.ChildNodes.Count == 6)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[4]);
-                            action(node.ChildNodes[5]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[4]);
+                            action(nodo.ChildNodes[5]);
                         }
-                        else if (node.ChildNodes.Count == 7)
+                        else if (nodo.ChildNodes.Count == 7)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[5]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[5]);
                         }
                         break;
                     }
                 case "DEFAULT":
                     {
-                        if (node.ChildNodes.Count == 5)
+                        if (nodo.ChildNodes.Count == 5)
                         {
-                            action(node.ChildNodes[3]);
+                            action(nodo.ChildNodes[3]);
                         }
                         break;
                     }
                 case "FOR":
                     {
-                        if (node.ChildNodes.Count == 7)
+                        if (nodo.ChildNodes.Count == 7)
                         {
-                            action(node.ChildNodes[2]);
-                            action(node.ChildNodes[5]);
+                            action(nodo.ChildNodes[2]);
+                            action(nodo.ChildNodes[5]);
                         }
                         break;
                     }
                 case "PARA":
                     {
-                        if (node.ChildNodes.Count == 8)
+                        if (nodo.ChildNodes.Count == 8)
                         {
-                            action(node.ChildNodes[3]);
-                            action(node.ChildNodes[5]);
-                            action(node.ChildNodes[7]);
+                            action(nodo.ChildNodes[3]);
+                            action(nodo.ChildNodes[5]);
+                            action(nodo.ChildNodes[7]);
                         }
                         break;
                     }
                 case "OP":
                     {
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            result = action(node.ChildNodes[0]);
+                            result = action(nodo.ChildNodes[0]);
                         }
                         break;
                     }
                 case "OpARITMETICO":
                     {
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            result = action(node.ChildNodes[0]);
+                            result = action(nodo.ChildNodes[0]);
                         }
                         break;
                     }
                 case "E":
                     {
                         //    MessageBox.Show("E");
-                        if (node.ChildNodes.Count == 1)
+                        if (nodo.ChildNodes.Count == 1)
                         {
-                            result = resolverOpAritmetica(node).ToString();
+                            result = resolverOperacion(nodo).ToString();
                         }
-                        else if (node.ChildNodes.Count == 3)
+                        else if (nodo.ChildNodes.Count == 3)
                         {
-                            result = resolverOpAritmetica(node).ToString();
+                            result = resolverOperacion(nodo).ToString();
 
                         }
                         break;
                     }
-                case "OpRELACIONAL":
-                    {
-                        if (node.ChildNodes.Count == 1)
-                        {
-                            result = action(node.ChildNodes[0]);
-                        }
-                        break;
-                    }
-                case "R":
-                    {
-                        // MessageBox.Show("R");
-                        if (node.ChildNodes.Count == 1)
-                        {
-                            result = resolverOpRelacional(node).ToString();
-                        }
-                        else if (node.ChildNodes.Count == 3)
-                        {
-                            result = resolverOpRelacional(node).ToString();
-                        }
-                        break;
-                    }
-                case "OpLOGICO":
-                    {
-                        //  MessageBox.Show("Logico");
-                        if (node.ChildNodes.Count == 1)
-                        {
-                            result = action(node.ChildNodes[0]);
-                        }
-                        break;
-                    }
-                case "L":
-                    {
-                        //MessageBox.Show("L");
-                        if (node.ChildNodes.Count == 1)
-                        {
-                            result = resolverOpLogico(node).ToString();
-                        }
-                        else if (node.ChildNodes.Count == 2)
-                        {
-                            result = resolverOpLogico(node).ToString();
 
-                        }
-                        else if (node.ChildNodes.Count == 3)
-                        {
-                            result = resolverOpLogico(node).ToString();
-
-                        }
-                        break;
-                    }
                 default:
                     break;
             }
@@ -521,11 +495,10 @@ namespace SBScript
 
         }
 
-        public static String resolverOpAritmetica(ParseTreeNode root)
+        public static String resolverOperacion(ParseTreeNode root)
         {
             concatenar = false;
             String resultado = expresion(root);
-            //     MessageBox.Show("El resultado es: " + resultado);
             return resultado;
         }
 
@@ -535,7 +508,7 @@ namespace SBScript
             {
                 case 1:
                     String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
-                    //
+
                     if (dato[1] == "cadena)")
                     {
                         concatenar = true;
@@ -548,7 +521,7 @@ namespace SBScript
                     }
                     else if (dato[1] == "id)")
                     {
-                       /*Variable v = Listas.obtenerVariable(dato[0]);
+                        Variable v = Listas.obtenerVariable(dato[0]);
                         if (v != null)
                         {
                             if (v.tipo == "string")
@@ -562,8 +535,20 @@ namespace SBScript
                             MessageBox.Show("ERROR"); //No encuentra el id
                             concatenar = true;
                             return "";
-                        }*/
-                        return "";
+                        }
+                        //   return "";
+                    }
+                    else if (dato[1] == "Keyword)")
+                    {
+                        concatenar = false;
+                        if (dato[0] == "true " || dato[0] == "true")
+                        {
+                            return "1";
+                        }
+                        else
+                        {
+                            return "0";
+                        }
                     }
                     else
                     {
@@ -600,6 +585,7 @@ namespace SBScript
                                     Double v2 = Convert.ToDouble(E2);
                                     Double r = v1 + v2;
                                     resultado = r.ToString();
+                                    concatenar = false;
                                     return resultado;
 
                                 }
@@ -657,7 +643,7 @@ namespace SBScript
                                 return "";
                             }
                         case ".":
-                           // Listas.concatenar = false;
+                            // Listas.concatenar = false;
                             concatenar = false;
                             //MessageBox.Show("punto");
                             String[] datos = root.ChildNodes.ElementAt(0).ToString().Split(' ');

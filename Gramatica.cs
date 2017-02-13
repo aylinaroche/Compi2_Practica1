@@ -34,7 +34,7 @@ namespace SBScript
             var tipoString = ToTerm("String");
             var tipoNumber = ToTerm("Number");
             var retornar = ToTerm("Retorno");
-            var tipoBoolean = ToTerm("Boolean");
+            var tipoBoolean = ToTerm("Bool");
             var tipoVoid = ToTerm("Void");
             var incluye = ToTerm("Incluye");
             var define = ToTerm("Define");
@@ -114,7 +114,7 @@ namespace SBScript
                 DEFAULT = new NonTerminal("DEFAULT"),
                 INSTRUCCIONES = new NonTerminal("INSTRUCCIONES"),
                 INSTRUCCION = new NonTerminal("INSTRUCCION"),
-                LLAMADA = new NonTerminal("LLAMADA"),
+                LLAMADA = new NonTerminal("LLAMADA("),
                 CONTINUAR = new NonTerminal("CONTINUAR"),
                 MAIN = new NonTerminal("MAIN"),
                 DatosIMPRIMIR = new NonTerminal("DatosIMPRIMIR"),
@@ -143,6 +143,8 @@ namespace SBScript
             C.Rule = incluye + id + extension
                 | define + numero
                 | define + cadena;
+
+            C.ErrorRule = SyntaxError + "}";
 
             TIPO.Rule = tipoNumber
                  | tipoString
@@ -185,6 +187,9 @@ namespace SBScript
                 | detener + puntoComa
                 | continuar + puntoComa;
 
+            INSTRUCCION.ErrorRule = SyntaxError + ";"
+                |SyntaxError + "}";
+
             METODO.Rule = tipoVoid + id + parentesisA + varPARAMETRO + parentesisC + llaveA + INSTRUCCIONES + llaveC
                 | tipoVoid + id + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC
                 | tipoVoid + id + parentesisA + parentesisC + llaveA + llaveC;
@@ -198,7 +203,7 @@ namespace SBScript
                   | TIPO + id;
 
             RETORNAR.Rule = retornar + OP + puntoComa
-                | retornar + ASIGNACION + puntoComa;
+                | retornar + OP;
 
             MAIN.Rule = principal + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
@@ -216,7 +221,8 @@ namespace SBScript
             ELSE.Rule = sino + INSTRUCCIONES
                 | sino + llaveA + INSTRUCCIONES + llaveC;
 
-            CICLO.Rule = hasta + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC;
+            CICLO.Rule = hasta + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                |mientras + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
             SWITCH.Rule = selecciona + parentesisA + OP + parentesisC + CASE
                        | selecciona + parentesisA + OP + parentesisC + llaveA + CASE + llaveC
@@ -272,17 +278,22 @@ namespace SBScript
                 | E + menori + E
                 | E + igualDoble + E
                 | E + diferente + E
+                | E + semejante + E
                 | E + or + E
                 | E + and + E
                 | not + E
                 | E + aumentar
                 | E +disminuir
                 | aumentar
-                |disminuir
+                | disminuir
                 | numero
                 | id
                 | cadena
-                | LLAMADA;
+                | falso
+                | verdadero
+                | LLAMADA
+                | menos + parentesisA + E + parentesisC
+                | menos + E;
 
             #endregion
 

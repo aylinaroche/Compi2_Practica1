@@ -19,9 +19,13 @@ namespace SBScript
             Parser parser = new Parser(lenguaje);
           //  MessageBox.Show("parser"); //Error de Gramatica
             ParseTree arbol = parser.Parse(cadena);
-            //MessageBox.Show("arbol");
             ParseTreeNode raiz = arbol.Root;
-            //MessageBox.Show("termino");
+           
+            for(int i = 0; i< arbol.ParserMessages.Count; i++)
+            {
+                Irony.LogMessage log = arbol.ParserMessages[i];
+                Reporte.agregarError(log.Message.ToString(), log.Level.ToString(), log.Location.Line, log.Location.Column);                
+            }
             if (raiz == null)
             {
                 return raiz;

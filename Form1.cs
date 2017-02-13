@@ -35,19 +35,19 @@ namespace SBScript
             {
                 RichTextBox rich = new RichTextBox();
                 rich.Name = "Tab";
-                rich.Width = 420;
-                rich.Height = 230;
-                
+                rich.Width = 450;
+                rich.Height = 350;
+
                 String ruta = "";
                 tab.Controls.Add(rich);
-              //  tab.Controls.Add(ruta);
+                //  tab.Controls.Add(ruta);
             }
         }
 
         public String nombrePestania()
         {
             num += 1;
-            String nombre = "Doc"+num;
+            String nombre = "Doc" + num;
             return nombre;
         }
         private void btnElminarPestania_Click(object sender, EventArgs e)
@@ -85,10 +85,10 @@ namespace SBScript
         private void btnGuardar_Click(object sender, EventArgs e)
         {
             String rutaAux = "";
-            for(int i=0; i < listaRuta.Count; i++)
+            for (int i = 0; i < listaRuta.Count; i++)
             {
-                Pestania p = (Pestania) listaRuta[i];
-                if(p.nombre == tabControl1.SelectedTab.ToString())
+                Pestania p = (Pestania)listaRuta[i];
+                if (p.nombre == tabControl1.SelectedTab.ToString())
                 {
                     rutaAux = p.ruta;
                 }
@@ -154,23 +154,65 @@ namespace SBScript
 
         private void btnEjecutar_Click(object sender, EventArgs e)
         {
+            Limpiar();
             var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
-          //  MessageBox.Show(rich.Text);
             ParseTreeNode resultado = Analizador.analizar(rich.Text);
 
             if (resultado != null)
             {
                 MessageBox.Show("El arbol fue construido correctamente");
                 PrimerRecorrido.action(resultado);
-                //             imprimirVariables();
-                //imprimir();
-                
+                imprimirVariables();
+                imprimir();
+
             }
             else
             {
                 MessageBox.Show("ERROR: Deberia de revisar la cadena de entrada");
             }
 
+        }
+
+        public void imprimir()
+        {
+            for (int i = 0; i < Listas.MensajeConsola.Count; i++)
+            {
+                String v = (String)Listas.MensajeConsola[i];
+                txtConsola.Text += v;
+            }
+        }
+
+        public void imprimirVariables()
+        {
+            for (int i = 0; i < Listas.listaVariables.Count; i++)
+            {
+                Variable v = (Variable)Listas.listaVariables[i];
+                txtConsola.Text += " -> "+v.tipo+", "+ v.nombre+", "+v.valor+", "+v.ambito+"\n";
+            }
+            txtConsola.Text += "\n ********************* \n\n";
+            for (int i = 0; i < Metodo_Funcion.metodoFuncion.Count; i++)
+            {
+                MF m = (MF)Metodo_Funcion.metodoFuncion[i];
+                txtConsola.Text += " -> " + m.tipo + ", " + m.nombre +"\n";
+                for (int j = 0; j < m.parametro.Count; j++)
+                {
+                    Parametro p = (Parametro)m.parametro[j];
+                    txtConsola.Text += "        -" + p.tipo + ", " + p.nombre + "\n";
+
+                }
+            }
+        }
+
+        public void Limpiar()
+        {
+            Listas.MensajeConsola.Clear();
+            Listas.listaVariables.Clear();
+            Metodo_Funcion.metodoFuncion.Clear();
+            txtConsola.Clear();
+        }
+        private void btnReporte_Click(object sender, EventArgs e)
+        {
+            Reporte.generarReporte();
         }
     }
 }

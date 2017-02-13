@@ -9,11 +9,28 @@ namespace SBScript
 {
     class Listas
     {
-        Stack miPila = new Stack();
+        public static int incerteza = 0;
+        public static string ruta = "";
+        public static ArrayList listaVariables = new ArrayList();
+        public static ArrayList MensajeConsola = new ArrayList();
 
-        void agregar(ref Stack pila, String ambito)
+
+        public static Variable obtenerVariable(String nombre)
         {
-            
+            Variable v = null;
+            for (int a = 0; a < Listas.listaVariables.Count; a++)
+            {
+                v = (Variable)Listas.listaVariables[a];
+                String varNombre = v.nombre + " ";
+
+                if (v.nombre == nombre || varNombre == nombre)
+                {
+                    return v;
+                }
+            }
+            return null;
         }
+
+  
     }
 }

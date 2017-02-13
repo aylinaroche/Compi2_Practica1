@@ -38,50 +38,7 @@ namespace SBScript
             }
         }
 
-        public static ArrayList metodoFuncion = new ArrayList();
-        public static ArrayList parametros = new ArrayList();
-
-        public static void agregarMF(String n, String t, String r, String nodo, ArrayList parametro)
-        {
-            MF mf = new MF();
-            mf.nombre = n;
-            mf.tipo = t;
-            mf.retorno = r;
-            mf.nodo = nodo;
-            mf.parametro = (ArrayList)parametro.Clone();
-            metodoFuncion.Add(mf);
-            //System.out.println("");
-        }
-
-        public static void agregarParametro(String t, String n)
-        {
-            Parametro p = new Parametro();
-            p.nombre = n;
-            p.tipo = t;
-            parametros.Add(p);
-        }
-
-        public static void parametroSimbolo(String ambito)
-        {
-
-            for (int i = 0; i < parametros.Count; i++)
-            {
-                Parametro p = (Parametro)parametros[i];
-                agregarSimbolo(p.tipo, p.nombre, "", ambito, "parametro", "-", "-");
-
-            }
-        }
-
-        public static double raiz(double n, double e)
-        {
-            double d = 1;
-            for (int i = 0; i < e; i++)
-            {
-                d = d * d;
-            }
-            return d;
-        }
-
+  
     }
 
 }
