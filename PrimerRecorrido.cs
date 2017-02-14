@@ -29,7 +29,8 @@ namespace SBScript
                         if (nodo.ChildNodes.Count == 1)
                         {
                             action(nodo.ChildNodes[0]);
-                        }else if (nodo.ChildNodes.Count == 2)
+                        }
+                        else if (nodo.ChildNodes.Count == 2)
                         {
                             action(nodo.ChildNodes[0]);
                             action(nodo.ChildNodes[1]);
@@ -38,7 +39,6 @@ namespace SBScript
                     }
                 case "ENTRADA":
                     {
-                        // MessageBox.Show("entrada");
                         if (nodo.ChildNodes.Count == 1)
                         {
                             pilaAmbito.Push("Global");
@@ -48,7 +48,6 @@ namespace SBScript
                     }
                 case "ENCABEZADO":
                     {
-                        //MessageBox.Show("encabezado");
                         if (nodo.ChildNodes.Count == 1)
                         {
                             action(nodo.ChildNodes[0]);
@@ -61,7 +60,6 @@ namespace SBScript
                         break;
                     }
                 case "C":
-                    //MessageBox.Show("c");
                     if (nodo.ChildNodes.Count == 2)
                     {
                         String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
@@ -86,13 +84,11 @@ namespace SBScript
                     }
                     else if (nodo.ChildNodes.Count == 3)
                     {
-                        //action(node.ChildNodes[0]);
                     }
                     break;
 
                 case "TIPO":
                     {
-                        // MessageBox.Show("DATA");
                         if (nodo.ChildNodes.Count == 1)
                         {
                             String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
@@ -103,19 +99,15 @@ namespace SBScript
                     }
                 case "DECLARACION":
                     {
-                        //   MessageBox.Show("DECLARACION");
                         if (nodo.ChildNodes.Count == 3)
                         {
                             String tipo = action(nodo.ChildNodes[0]);
                             String vars = action(nodo.ChildNodes[1]);
                             String[] var = (vars.Split(','));
-
+                            String ambito = pilaAmbito.Peek().ToString();
                             for (int i = 0; i < var.Length - 1; i++)
                             {
-                                Variable v = new Variable();
-                                v.tipo = tipo;
-                                v.nombre = var[i];
-                                Listas.listaVariables.Add(v);
+                                Variables.crearVariable(tipo, var[i], "",ambito);
                             }
                         }
                         else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
@@ -124,14 +116,15 @@ namespace SBScript
                             String vars = action(nodo.ChildNodes[1]);
                             String[] var = (vars.Split(','));
                             String asig = action(nodo.ChildNodes[3]);
-
-                            for (int i = 0; i < var.Length - 1; i++)
+                            String ambito = pilaAmbito.Peek().ToString();
+                            if (asig != "error") {
+                                for (int i = 0; i < var.Length - 1; i++)
+                                {
+                                    Variables.crearVariable(tipo, var[i], asig, ambito);
+                                }
+                            }else
                             {
-                                Variable v = new Variable();
-                                v.tipo = tipo;
-                                v.nombre = var[i];
-                                v.valor = asig;
-                                Listas.listaVariables.Add(v);
+                                Reporte.agregarMensajeError("Error al declarar la expresion en una variable global", "Error Semantico", 0, 0);
                             }
                         }
                         break;
@@ -158,12 +151,8 @@ namespace SBScript
                         {
                             String id = action(nodo.ChildNodes[0]);
                             String asig = action(nodo.ChildNodes[2]);
-
                             Variable v = new Variable();
-                            //  v.tipo = tipo;
-                            //v.nombre = var[i];
-                            v.valor = asig;
-                            Listas.listaVariables.Add(v);
+                            Reporte.agregarMensajeError("Error al asignar una expresion en una variable global","Error Semantico",0,0);
                         }
                         break;
                     }
@@ -171,61 +160,14 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 5)
                         {
-                            action(nodo.ChildNodes[2]);
+                            Reporte.agregarMensajeError("No puede imprimir en el area de variables globales", "Error Semantico", 0, 0);
+                            //action(nodo.ChildNodes[2]);
                         }
-                        break;
-                    }
-                case "DatosIMPRIMIR":
-                    {
-
-                        if (nodo.ChildNodes.Count == 1)
-                        {
-                            action(nodo.ChildNodes[0]);
-                        }
-                        else if (nodo.ChildNodes.Count == 3)
-                        {
-                            action(nodo.ChildNodes[0]);
-                            action(nodo.ChildNodes[2]);
-                        }
-
-                        // MessageBox.Show("aITEM");
-                        /*    if (node.ChildNodes.Count == 1)
-                             else if (node.ChildNodes.Count == 4)
-                            {
-                                String[] dato = (node.ChildNodes.ElementAt(0).ToString().Split(' '));
-                                String id1 = dato[0];
-                                String[] dato2 = (node.ChildNodes.ElementAt(2).ToString().Split(' '));
-                                String id2 = dato2[0];
-                                Listas.igualarVariables(id1, id2);
-                            }
-                            else if (node.ChildNodes.Count == 5)
-                            {
-                                String[] dato = (node.ChildNodes.ElementAt(0).ToString().Split(' '));
-                                String id = dato[0];
-                                String atributo = action(node.ChildNodes[2]);
-                                String asignacion = action(node.ChildNodes[4]);
-
-                                Boolean existe = Listas.asignarValor(id, atributo, asignacion);
-                                if (existe == false)
-                                {
-                                    Listas.agregarError(dato[0], "La variable no existe.", "Error sintacticco");
-                                }
-
-                            }
-                            else if (node.ChildNodes.Count == 8)
-                            {
-                                String tipo1 = action(node.ChildNodes[0]);
-                                String tipo2 = action(node.ChildNodes[4]);
-
-
-
-                            }*/
                         break;
                     }
 
                 case "DIBUJAR":
                     {
-                        // MessageBox.Show("OpcionITEM");
                         if (nodo.ChildNodes.Count == 5)
                         {
                             //result = action(node.ChildNodes[0]);
@@ -234,7 +176,6 @@ namespace SBScript
                     }
                 case "INSTRUCCIONES":
                     {
-                        //  MessageBox.Show("ATRIBUTO");
                         if (nodo.ChildNodes.Count == 1)
                         {
                             action(nodo.ChildNodes[0]);
@@ -248,7 +189,6 @@ namespace SBScript
                     }
                 case "INSTRUCCION":
                     {
-                        //MessageBox.Show("TipoITEM");
                         if (nodo.ChildNodes.Count == 1)
                         {
                             action(nodo.ChildNodes[0]);
@@ -302,7 +242,7 @@ namespace SBScript
                             {
                                 Metodo_Funcion.agregarMF(tipo, dato[0], "", nodo.ChildNodes[5], null);
                             }
-                           
+
                         }
                         else if (nodo.ChildNodes.Count == 8)
                         {
@@ -325,11 +265,11 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 4)
                         {
                             action(nodo.ChildNodes[0]);
-                            String t =action(nodo.ChildNodes[2]);
+                            String t = action(nodo.ChildNodes[2]);
                             String[] dato = (nodo.ChildNodes.ElementAt(3).ToString().Split(' '));
                             Metodo_Funcion.agregarParametro(t, dato[0]);
                         }
- break;
+                        break;
                     }
                 case "RETORNAR":
                     {
@@ -342,6 +282,7 @@ namespace SBScript
                     }
                 case "MAIN":
                     {
+                        Metodo_Funcion.parametros.Clear();
                         if (nodo.ChildNodes.Count == 6)
                         {
                             Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], null);
@@ -351,7 +292,6 @@ namespace SBScript
 
                 case "LLAMADA":
                     {
-                        //MessageBox.Show("ASIGNACION");
                         if (nodo.ChildNodes.Count == 4)
                         {
                             action(nodo.ChildNodes[2]);
@@ -364,7 +304,6 @@ namespace SBScript
                     }
                 case "TipoPARAMETRO":
                     {
-                        //MessageBox.Show("IMPRIMIR");
                         if (nodo.ChildNodes.Count == 3)
                         {
 
@@ -373,7 +312,6 @@ namespace SBScript
                     }
                 case "SI":
                     {
-                        // MessageBox.Show("DatosIMPRIMIR");
                         if (nodo.ChildNodes.Count == 7)
                         {
                             action(nodo.ChildNodes[2]);
@@ -389,7 +327,6 @@ namespace SBScript
                     }
                 case "ELSE":
                     {
-                        //MessageBox.Show("POSICION");
                         if (nodo.ChildNodes.Count == 2)
                         {
                             action(nodo.ChildNodes[1]);
@@ -521,7 +458,7 @@ namespace SBScript
                     }
                     else if (dato[1] == "id)")
                     {
-                        Variable v = Listas.obtenerVariable(dato[0]);
+                        Variable v = Variables.obtenerVariable(dato[0]);
                         if (v != null)
                         {
                             if (v.tipo == "string")
@@ -532,11 +469,11 @@ namespace SBScript
                         }
                         else
                         {
-                            MessageBox.Show("ERROR"); //No encuentra el id
+                            //Reporte.agregarMensajeError("El id indicado no existe", "Error Semantico", 0, 0);
                             concatenar = true;
-                            return "";
+                            return "error";
                         }
-                        //   return "";
+                     
                     }
                     else if (dato[1] == "Keyword)")
                     {
@@ -549,6 +486,10 @@ namespace SBScript
                         {
                             return "0";
                         }
+                    }
+                    else if (dato[0] == "LLAMADA")
+                    {
+                        return "error";
                     }
                     else
                     {
@@ -591,8 +532,7 @@ namespace SBScript
                                 }
                                 catch (Exception e)
                                 {
-                                    MessageBox.Show("E");
-                                    return "";
+                                    return "error";
                                 }
 
                             }
@@ -609,7 +549,7 @@ namespace SBScript
                             }
                             catch (Exception e)
                             {
-                                MessageBox.Show("E");
+                                return "error";
                                 return "";
                             }
                         case "/": //E/E
@@ -624,7 +564,7 @@ namespace SBScript
                             }
                             catch (Exception e)
                             {
-                                MessageBox.Show("E");
+                                return "error";
                                 return "";
                             }
                         case "*": //E*E
@@ -642,23 +582,7 @@ namespace SBScript
                                 MessageBox.Show("E");
                                 return "";
                             }
-                        case ".":
-                            // Listas.concatenar = false;
-                            concatenar = false;
-                            //MessageBox.Show("punto");
-                            String[] datos = root.ChildNodes.ElementAt(0).ToString().Split(' ');
-                            String id = datos[0];
-                            String atributo = action(root.ChildNodes[2]);
-                            /*resultado = Listas.obtenerValor(id, atributo);
-
-                            if (Listas.concatenar == true)
-                            {
-                                concatenar = true;
-                            }
-                            */
-                            return resultado;
-
-
+                     
                         default: //(E)
                             return expresion(root.ChildNodes.ElementAt(1));
                     }
@@ -666,338 +590,6 @@ namespace SBScript
             }
             return "";
         }
-
-        public static String resolverOpRelacional(ParseTreeNode root)
-
-        {
-            String resultado = expresionR(root);
-            //   MessageBox.Show("El resultado es: " + resultado);
-            return resultado;
-        }
-
-        private static String expresionR(ParseTreeNode root)
-        {
-            switch (root.ChildNodes.Count)
-            {
-                case 1: //Nodo hoja
-                        //   MessageBox.Show("caso 1");
-                    String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split(' '));
-
-                    if (dato[1] == "(numero)")
-                    {
-                        MessageBox.Show("entro en numero");
-                        try
-                        {
-                            return (dato[0].ToString());
-                        }
-                        catch (Exception e)
-                        {
-                            mensajeAux = "error::: " + dato[0].ToString();
-                            return "false";
-                        }
-                    }
-                    else if (dato[1] == "(id)")
-                    {
-                        MessageBox.Show("entro en id");
-                        return (dato[0].ToString());
-                        //buscar variable en lista de variables
-                    }
-                    else if (dato[1] == "(Keyword)")
-                    {
-                        return (dato[0].ToString());
-                    }
-                    else if (dato[1] == "STRING")
-                    {
-                        return (dato[0].ToString());
-                    }
-                    else
-                    {
-                        MessageBox.Show("entro en else");
-                        return "false";
-                    }
-
-
-                case 3: //Nodo binario
-                        //    MessageBox.Show("caso 3");
-                    String[] simbolo = (root.ChildNodes.ElementAt(0).ToString().Split(' '));
-                    MessageBox.Show("simbolo=" + root.ChildNodes.ElementAt(1).ToString().Substring(0, 2));
-                    Double var1, var2;
-                    switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 2))
-                    {
-
-                        case "> ":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 > var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-
-
-
-                        case "< ":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 < var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-                        case ">=":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 >= var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-                        case "<=":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 <= var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-                        case "==":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 == var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-                        case "!=":
-                            try
-                            {
-                                var1 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(0)));
-                                var2 = Convert.ToDouble(expresion(root.ChildNodes.ElementAt(2)));
-
-                                if (var1 != var2)
-                                {
-                                    return "true";
-                                }
-                                else
-                                {
-                                    return "false";
-                                }
-                            }
-                            catch
-                            {
-                                return "error";
-                            }
-                        default:
-                            //return expresion(root.ChildNodes.ElementAt(1));
-                            return "error D";
-                    }
-
-            }
-            return "null";
-        }
-
-        public static String resolverOpLogico(ParseTreeNode root)
-
-        {
-            String resultado = expresionL(root);
-            //           MessageBox.Show("El resultado es: " + resultado);
-            return resultado;
-        }
-
-        private static String expresionL(ParseTreeNode root)
-        {
-            switch (root.ChildNodes.Count)
-            {
-                case 1: //Nodo hoja
-
-                    String result = action(root.ChildNodes[0]);
-                    return result;
-                case 2:
-
-                    String var = action(root.ChildNodes[1]);
-                    if (var == "false")
-                    {
-                        return "true";
-                    }
-                    else
-                    {
-                        return "false";
-                    }
-
-                case 3: //Nodo binario
-
-                    String var1 = action(root.ChildNodes[0]);
-                    String var2 = action(root.ChildNodes[2]);
-
-
-                    String[] simbolo = (root.ChildNodes.ElementAt(0).ToString().Split(' '));
-                    //                 MessageBox.Show("simbolo=" + root.ChildNodes.ElementAt(1).ToString().Substring(0, 3));
-
-                    switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 3))
-                    {
-
-                        case "&& ":
-                            if (var1 == "true" && var2 == "true" || var1 == "false" && var2 == "false")
-                            {
-                                return "true";
-                            }
-                            else
-                            {
-                                return "false";
-                            }
-
-                        case "|| ":
-                            if (var1 == "true" || var2 == "true")
-                            {
-                                return "true";
-                            }
-                            else
-                            {
-                                return "false";
-                            }
-                        default:
-                            //return expresion(root.ChildNodes.ElementAt(1));
-                            return "E";
-                    }
-
-            }
-            return "null";
-        }
-
-        public static String obtenerImprimir(ParseTreeNode root)
-        {
-            MessageBox.Show("obtener I =" + root.ToString() + ", " + root.ChildNodes.Count);
-            String resultado = datosImprimir(root);
-            MessageBox.Show("El resultado es: " + resultado);
-            return resultado;
-        }
-
-        private static String datosImprimir(ParseTreeNode root)
-        {
-            switch (root.ChildNodes.Count)
-            {
-                case 1: //Nodo hoja
-                    try
-                    {
-                        String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
-                        MessageBox.Show("dato = " + (dato[1].ToString()));
-                        if (dato[1] == "numero)")
-                        {
-                            MessageBox.Show("entro en numero");
-                            return (dato[0].ToString());
-                        }
-                        else if (dato[1] == "id)")
-                        {
-                            MessageBox.Show("entro en id");
-                            String valor = "";// = obtenerValorVariable(dato[0].ToString());
-                            return valor;
-
-                        }
-                        else if (dato[1] == "Keyword)")
-                        {
-                            MessageBox.Show("entro en key");
-                            return (dato[0].ToString());
-                        }
-                        else if (dato[1] == "STRING)")
-                        {
-                            MessageBox.Show("entro en cadena");
-                            return (dato[0].ToString());
-                        }
-                        else
-                        {
-                            MessageBox.Show("entro en else");
-                            String result = action(root.ChildNodes[0]);
-                            return "false";
-                        }
-                    }
-                    catch
-                    {
-                        MessageBox.Show("CATCH");
-                        String result = action(root.ChildNodes[0]);
-                        MessageBox.Show("Result del catch " + result);
-                        return result;
-                    }
-
-
-                case 3: //Nodo binario
-                    String var1 = datosImprimir(root.ChildNodes[0]);
-                    String var2 = datosImprimir(root.ChildNodes[2]);
-
-
-                    String[] simbolo = (root.ChildNodes.ElementAt(0).ToString().Split(' '));
-                    MessageBox.Show("simbolo=" + root.ChildNodes.ElementAt(1).ToString().Substring(0, 1));
-
-                    switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 1))
-                    {
-
-                        case "+":
-                            String texto = "";
-                            texto = var1 + var2;
-                            return texto;
-
-                        default:
-
-                            return "error D";
-                    }
-
-            }
-            return "vacio";
-        }
-
+      
     }
 }

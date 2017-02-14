@@ -117,7 +117,7 @@ namespace SBScript
                 LLAMADA = new NonTerminal("LLAMADA("),
                 CONTINUAR = new NonTerminal("CONTINUAR"),
                 MAIN = new NonTerminal("MAIN"),
-                DatosIMPRIMIR = new NonTerminal("DatosIMPRIMIR"),
+                DatosMOSTRAR = new NonTerminal("DatosMOSTRAR"),
                 RETORNAR = new NonTerminal("RETORNAR"),
                 ASIGNACION = new NonTerminal("ASIGNACION"),
                 PARA = new NonTerminal("PARA"),
@@ -160,10 +160,9 @@ namespace SBScript
             ASIGNACION.Rule = id + igual + OP + puntoComa
                 | id + igual + OP;
 
-            MOSTRAR.Rule = mostrar + parentesisA + DatosIMPRIMIR + parentesisC + puntoComa;
+            MOSTRAR.Rule = mostrar + parentesisA + DatosMOSTRAR + parentesisC + puntoComa;
 
-            DatosIMPRIMIR.Rule = DatosIMPRIMIR + mas + DatosIMPRIMIR
-                | DatosIMPRIMIR + coma + DatosIMPRIMIR
+            DatosMOSTRAR.Rule = DatosMOSTRAR + coma + OP
                 | OP;
 
             DIBUJAR.Rule = dibujarAST + parentesisA + id + parentesisC + puntoComa

@@ -10,35 +10,32 @@ namespace SBScript
 {
     class Metodo_Funcion
     {
-        public static ArrayList metodoFuncion = new ArrayList();
+        public static ArrayList listaMetodoFuncion = new ArrayList();
         public static ArrayList parametros = new ArrayList();
 
-        public static void agregarMF(String t, String n, String r, ParseTreeNode nodo,  ArrayList p)
+        public static void agregarMF(String t, String n, String r, ParseTreeNode nodo, ArrayList p)
         {
-
-            ArrayList param = new ArrayList();
-            
             Boolean existe = false;
-            for(int i = 0; i < metodoFuncion.Count; i++)
+            for (int i = 0; i < listaMetodoFuncion.Count; i++)
             {
-                MF m = (MF)metodoFuncion[i];
-                if (m.tipo.Equals(t) && m.nombre.Equals(n) && p.Count==m.parametro.Count)
+                MF m = (MF)listaMetodoFuncion[i];
+                if (m.tipo.Equals(t) && m.nombre.Equals(n) && p.Count == m.parametro.Count)
+                {
+                    for (int j = 0; j < p.Count; j++)
                     {
-                    for (int j= 0; j < p.Count; j++)
-                    {
-                        if (p[j] == m.parametro[j])
+                        Parametro p1 = (Parametro)p[j];
+                        Parametro p2 = (Parametro)m.parametro[j];
+                        if (p1.nombre == p2.nombre && p1.tipo == p2.tipo)
                         {
-                            existe=true;
+                            existe = true;
                         }
                     }
-                    if(parametros.Count == 0 && m.parametro.Count == 0)
+                    if (parametros.Count == 0 && m.parametro.Count == 0)
                     {
                         existe = true;
                     }
-
                 }
-
-            }
+}
             if (existe == false)
             {
                 MF mf = new MF();
@@ -47,7 +44,7 @@ namespace SBScript
                 mf.retorno = r;
                 mf.nodo = nodo;
                 mf.parametro = (ArrayList)parametros.Clone();
-                metodoFuncion.Add(mf);
+                listaMetodoFuncion.Add(mf);
             }
             else
             {
@@ -65,18 +62,23 @@ namespace SBScript
             parametros.Add(p);
         }
 
-        public static void parametroSimbolo(String ambito)
+        public static ParseTreeNode buscarMetodo(String nombre)
         {
-
-            for (int i = 0; i < parametros.Count; i++)
+            ParseTreeNode nodo=null;
+            for (int i = 0; i < listaMetodoFuncion.Count; i++)
             {
-                Parametro p = (Parametro)parametros[i];
-               // agregarSimbolo(p.tipo, p.nombre, "", ambito, "parametro", "-", "-");
-
+                MF mf = (MF)listaMetodoFuncion[i];
+                if(mf.nombre == nombre)
+                {
+                    return mf.nodo;
+                }
             }
+            return nodo;
         }
 
     }
+
+    
     class MF
     {
         public String nombre;

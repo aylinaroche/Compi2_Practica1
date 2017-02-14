@@ -162,6 +162,12 @@ namespace SBScript
             {
                 MessageBox.Show("El arbol fue construido correctamente");
                 PrimerRecorrido.action(resultado);
+                ParseTreeNode nodoPrincipal = Metodo_Funcion.buscarMetodo("MAIN");
+                if (nodoPrincipal != null)
+                {
+                    PrimerRecorrido.pilaAmbito.Push("Principal");
+                    SegundoRecorrido.action(nodoPrincipal);
+                }
                 imprimirVariables();
                 imprimir();
 
@@ -184,15 +190,15 @@ namespace SBScript
 
         public void imprimirVariables()
         {
-            for (int i = 0; i < Listas.listaVariables.Count; i++)
+            for (int i = 0; i < Variables.listaVariables.Count; i++)
             {
-                Variable v = (Variable)Listas.listaVariables[i];
+                Variable v = (Variable)Variables.listaVariables[i];
                 txtConsola.Text += " -> "+v.tipo+", "+ v.nombre+", "+v.valor+", "+v.ambito+"\n";
             }
             txtConsola.Text += "\n ********************* \n\n";
-            for (int i = 0; i < Metodo_Funcion.metodoFuncion.Count; i++)
+            for (int i = 0; i < Metodo_Funcion.listaMetodoFuncion.Count; i++)
             {
-                MF m = (MF)Metodo_Funcion.metodoFuncion[i];
+                MF m = (MF)Metodo_Funcion.listaMetodoFuncion[i];
                 txtConsola.Text += " -> " + m.tipo + ", " + m.nombre +"\n";
                 for (int j = 0; j < m.parametro.Count; j++)
                 {
@@ -201,13 +207,15 @@ namespace SBScript
 
                 }
             }
+            txtConsola.Text += "\n ********************* \n\n\n";
         }
 
         public void Limpiar()
         {
             Listas.MensajeConsola.Clear();
-            Listas.listaVariables.Clear();
-            Metodo_Funcion.metodoFuncion.Clear();
+            Variables.listaVariables.Clear();
+            Metodo_Funcion.listaMetodoFuncion.Clear();
+            Reporte.errores.Clear();
             txtConsola.Clear();
         }
         private void btnReporte_Click(object sender, EventArgs e)

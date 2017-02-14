@@ -19,6 +19,12 @@ namespace SBScript
         }
 
 
+        public static void agregarMensajeError(String nombre, String tipo, int fila, int columna)
+        {
+            errores.Add(new Error(nombre, tipo, fila, columna));
+            Listas.MensajeConsola.Add("> "+nombre+".\n");
+        }
+
 
         public static void generarReporte()
         {
