@@ -7,13 +7,12 @@ using Irony.Parsing;
 
 namespace SBScript
 {
-    public class Gramatica : Grammar
+    class GramaticaFuncion : Grammar
     {
-        public Gramatica() : base(caseSensitive: true)
+        public GramaticaFuncion() : base(caseSensitive: true)
         {
             #region ERs
             RegexBasedTerminal letra = new RegexBasedTerminal("letra", "[0-9]*[a-zA-Z][0-9a-zA-Z]");
-            //RegexBasedTerminal numero = new RegexBasedTerminal("numero", "[+|-]?[0-9]+");
             RegexBasedTerminal decim = new RegexBasedTerminal("decimal", "[0-9]* . [0-9]*");
             NumberLiteral numero = new NumberLiteral("numero");
             IdentifierTerminal id = new IdentifierTerminal("id");
@@ -104,7 +103,7 @@ namespace SBScript
                 OpLOGICO = new NonTerminal("OpLOGICO"),
                 OpARITMETICO = new NonTerminal("OpARITMETICO"),
                 OpRELACIONAL = new NonTerminal("OpRELACIONAL"),
-                OP = new NonTerminal("OP"),
+                EXPRESION = new NonTerminal("EXPRESION"),
                 CICLO = new NonTerminal("CICLO"),
                 SI = new NonTerminal("SI"),
                 SWITCH = new NonTerminal("SWITCH"),
@@ -132,43 +131,30 @@ namespace SBScript
             #endregion
 
             #region Gramatica
-            ENTRADA.Rule = INICIO;
-
-            INICIO.Rule = ENCABEZADO + INSTRUCCIONES
-                | INSTRUCCIONES
-                | ENCABEZADO; ///
-
-            ENCABEZADO.Rule = ENCABEZADO + C
-                | C;
-
-            C.Rule = incluye + id + extension
-                | define + numero
-                | define + cadena;
-
-            C.ErrorRule = SyntaxError + "}";
-
+            ENTRADA.Rule = INSTRUCCIONES;
+           
             TIPO.Rule = tipoNumber
                  | tipoString
                  | tipoBoolean;
 
             DECLARACION.Rule = TIPO + VAR + puntoComa
-                | TIPO + VAR + igual + OP + puntoComa
-                | TIPO + VAR + igual + OP;
+                | TIPO + VAR + igual + EXPRESION + puntoComa
+                | TIPO + VAR + igual + EXPRESION;
 
             VAR.Rule = VAR + coma + id
                 | id;
 
-            ASIGNACION.Rule = id + igual + OP + puntoComa
-                | id + igual + OP;
+            ASIGNACION.Rule = id + igual + EXPRESION + puntoComa
+                | id + igual + EXPRESION;
 
             MOSTRAR.Rule = mostrar + parentesisA + DatosMOSTRAR + parentesisC + puntoComa;
 
-            DatosMOSTRAR.Rule = DatosMOSTRAR + coma + OP
-                | OP;
+            DatosMOSTRAR.Rule = DatosMOSTRAR + coma + EXPRESION
+                | EXPRESION;
 
             DibujarAST.Rule = dibujarAST + parentesisA + id + parentesisC + puntoComa;
 
-            DibujarEXP.Rule = dibujarEXP + parentesisA + OP + parentesisC + puntoComa;
+            DibujarEXP.Rule = dibujarEXP + parentesisA + EXPRESION + parentesisC + puntoComa;
 
             INSTRUCCIONES.Rule = INSTRUCCIONES + INSTRUCCION
                 | INSTRUCCION;
@@ -190,23 +176,8 @@ namespace SBScript
                 | detener + puntoComa
                 | continuar + puntoComa;
 
-            INSTRUCCION.ErrorRule = SyntaxError + ";"
-                |SyntaxError + "}";
-
-            METODO.Rule = tipoVoid + id + parentesisA + varPARAMETRO + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                | tipoVoid + id + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                | tipoVoid + id + parentesisA + parentesisC + llaveA + llaveC;
-
-            FUNCION.Rule = TIPO + id + parentesisA + varPARAMETRO + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                  | TIPO + id + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                  | TIPO + id + parentesisA + varPARAMETRO + parentesisC + llaveA + llaveC
-                  | TIPO + id + parentesisA + parentesisC + llaveA + llaveC;
-
-            varPARAMETRO.Rule = varPARAMETRO + coma + TIPO + id
-                  | TIPO + id;
-
-            RETORNAR.Rule = retornar + OP + puntoComa
-                | retornar + OP;
+            RETORNAR.Rule = retornar + EXPRESION + puntoComa
+                | retornar + EXPRESION;
 
             MAIN.Rule = principal + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
@@ -215,60 +186,33 @@ namespace SBScript
                      | id + parentesisA + parentesisC + puntoComa
                      | id + parentesisA + parentesisC;
 
-            TipoPARAMETRO.Rule = TipoPARAMETRO + coma + OP
-                        | OP;
+            TipoPARAMETRO.Rule = TipoPARAMETRO + coma + TipoPARAMETRO
+                        | EXPRESION;
 
-            SI.Rule = si + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                  | si + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC + ELSE;
+            SI.Rule = si + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                  | si + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC + ELSE;
 
             ELSE.Rule = sino + INSTRUCCIONES
                 | sino + llaveA + INSTRUCCIONES + llaveC;
 
-            CICLO.Rule = hasta + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                |mientras + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC;
+            CICLO.Rule = hasta + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                | mientras + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
-            SWITCH.Rule = selecciona + parentesisA + OP + parentesisC + CASE
-                       | selecciona + parentesisA + OP + parentesisC + llaveA + CASE + llaveC
-                       | selecciona + parentesisA + OP + parentesisC + CASE + DEFAULT
-                       | selecciona + parentesisA + OP + parentesisC + DEFAULT;
+            SWITCH.Rule = selecciona + parentesisA + EXPRESION + parentesisC + CASE
+                       | selecciona + parentesisA + EXPRESION + parentesisC + llaveA + CASE + llaveC
+                       | selecciona + parentesisA + EXPRESION + parentesisC + CASE + DEFAULT
+                       | selecciona + parentesisA + EXPRESION + parentesisC + DEFAULT;
 
-            CASE.Rule = CASE + OP + dosPuntos + llaveA + INSTRUCCIONES + llaveC
-                | OP + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
+            CASE.Rule = CASE + EXPRESION + dosPuntos + llaveA + INSTRUCCIONES + llaveC
+                | EXPRESION + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
             DEFAULT.Rule = defecto + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
             FOR.Rule = para + parentesisA + PARA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
-            PARA.Rule = tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + OP;
+            PARA.Rule = tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + EXPRESION;
 
-            OP.Rule = E;
-
-            OpRELACIONAL.Rule = R;
-
-            R.Rule = parentesisA + R + parentesisC
-                    | R + mayor + R
-                    | R + menor + R
-                    | R + mayori + R
-                    | R + menori + R
-                    | R + igualDoble + R
-                    | R + diferente + R
-                    | numero
-                    | id
-                    | cadena
-                    | falso
-                    | verdadero;
-
-            OpLOGICO.Rule = L;
-
-            L.Rule = parentesisA + L + parentesisC
-                    | L + or + L
-                    | L + and + L
-                    | not + L
-                    | OpRELACIONAL;
-
-            OpARITMETICO.Rule = E;
-
-            E.Rule = parentesisA + E + parentesisC
+            EXPRESION.Rule = parentesisA + E + parentesisC
                 | E + mas + E
                 | E + menos + E
                 | E + por + E
@@ -286,7 +230,7 @@ namespace SBScript
                 | E + and + E
                 | not + E
                 | E + aumentar
-                | E +disminuir
+                | E + disminuir
                 | aumentar
                 | disminuir
                 | numero
@@ -304,7 +248,7 @@ namespace SBScript
             #region Preferencias
             this.Root = ENTRADA;
             //MarkPunctuation(si,num);
-           // MarkPunctuation(INSTRUCCIONES);
+            // MarkPunctuation(INSTRUCCIONES);
 
             //Para esto utilizaremos la funcion RegisterOperators
             //El primer parametro indica el nivel de precedencia del 
@@ -314,12 +258,9 @@ namespace SBScript
 
             this.RegisterOperators(1, Associativity.Left, "||");
             this.RegisterOperators(2, Associativity.Left, "&&");
-            this.RegisterOperators(3, Associativity.Left, "!&");
-            this.RegisterOperators(4, Associativity.Right, "!");
-            this.RegisterOperators(5, Associativity.Left, "==");
-            this.RegisterOperators(6, Associativity.Left, "+", "-");
-            this.RegisterOperators(7, Associativity.Left, "*", "/");
-           // this.RegisterOperators(6, Associativity.Left, "==", "!=");
+            this.RegisterOperators(3, Associativity.Right, "!");
+            this.RegisterOperators(4, Associativity.Left, "+", "-");
+            this.RegisterOperators(5, Associativity.Left, "*", "/");
             #endregion
         }
     }

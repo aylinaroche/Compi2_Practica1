@@ -56,6 +56,28 @@ namespace SBScript
 
 
         }
+
+        public static void generarAST(ParseTreeNode raiz, String nombre)
+        {
+            String grafodot = DIBUJAR.getDotFuncion(raiz);
+            String ruta = "C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/Imagenes/"+nombre+".dot";
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(ruta))
+            {
+                file.WriteLine(grafodot);
+            }
+            ProcessStartInfo startInfo = new ProcessStartInfo("C:\\Program Files (x86)\\Graphviz 2.28\\bin\\dot.exe");
+            startInfo.Arguments = "dot -Tpng \""+ruta+"\" -o \"C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/Imagenes/"+nombre+".png\"";
+            try
+            {
+                Process.Start(startInfo);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+
+
+        }
     }
 }
 

@@ -12,6 +12,7 @@ namespace SBScript
     {
         public static ArrayList listaMetodoFuncion = new ArrayList();
         public static ArrayList parametros = new ArrayList();
+        public static ArrayList parametrosTemp = new ArrayList();
 
         public static void agregarMF(String t, String n, String r, ParseTreeNode nodo, ArrayList p)
         {
@@ -35,7 +36,7 @@ namespace SBScript
                         existe = true;
                     }
                 }
-}
+            }
             if (existe == false)
             {
                 MF mf = new MF();
@@ -64,21 +65,42 @@ namespace SBScript
 
         public static ParseTreeNode buscarMetodo(String nombre)
         {
-            ParseTreeNode nodo=null;
+            Boolean existe = true;
+            ParseTreeNode nodo = null;
             for (int i = 0; i < listaMetodoFuncion.Count; i++)
             {
                 MF mf = (MF)listaMetodoFuncion[i];
-                if(mf.nombre == nombre)
+                if (mf.nombre == nombre && parametrosTemp.Count == mf.parametro.Count)
                 {
-                    return mf.nodo;
+                    for (int j = 0; j < parametrosTemp.Count; j++)
+                    {
+                        Parametro p1 = (Parametro)parametrosTemp[j];
+                        Parametro p2 = (Parametro)mf.parametro[j];
+                        if (p1.tipo != p2.tipo)
+                        {
+                            j = parametrosTemp.Count + 1;
+                            existe = false;
+                        }
+                    }
+                    if (existe == true)
+                    {
+                        return mf.nodo;
+                    }
                 }
             }
             return nodo;
         }
 
+        public static void agregarParametroTemp(String t, String n)
+        {
+            Parametro p = new Parametro();
+            p.nombre = n;
+            p.tipo = t;
+            parametrosTemp.Add(p);
+        }
     }
 
-    
+
     class MF
     {
         public String nombre;

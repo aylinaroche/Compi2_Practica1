@@ -16,7 +16,7 @@ namespace SBScript
         public static String mensajeAux = "";
         public static Boolean concatenar = false;
         //
-        public static Stack pilaAmbito = new Stack();
+        
 
         public static String action(ParseTreeNode nodo)
         {
@@ -41,7 +41,8 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
-                            pilaAmbito.Push("Global");
+                           Variables.pilaAmbito.Push("Global");
+                            Variables.nivelAmbito = 0;
                             action(nodo.ChildNodes[0]);
                         }
                         break;
@@ -104,7 +105,7 @@ namespace SBScript
                             String tipo = action(nodo.ChildNodes[0]);
                             String vars = action(nodo.ChildNodes[1]);
                             String[] var = (vars.Split(','));
-                            String ambito = pilaAmbito.Peek().ToString();
+                            String ambito = Variables.pilaAmbito.Peek().ToString();
                             for (int i = 0; i < var.Length - 1; i++)
                             {
                                 Variables.crearVariable(tipo, var[i], "",ambito);
@@ -116,7 +117,7 @@ namespace SBScript
                             String vars = action(nodo.ChildNodes[1]);
                             String[] var = (vars.Split(','));
                             String asig = action(nodo.ChildNodes[3]);
-                            String ambito = pilaAmbito.Peek().ToString();
+                            String ambito = Variables.pilaAmbito.Peek().ToString();
                             if (asig != "error") {
                                 for (int i = 0; i < var.Length - 1; i++)
                                 {
@@ -204,18 +205,18 @@ namespace SBScript
                         Metodo_Funcion.parametros.Clear();
                         if (nodo.ChildNodes.Count == 6)
                         {
-                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
                             Metodo_Funcion.agregarMF("Void", dato[0], "", null, null);
                         }
                         else if (nodo.ChildNodes.Count == 7)
                         {
-                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
                             Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[5], null);
                         }
                         else if (nodo.ChildNodes.Count == 8)
                         {
                             action(nodo.ChildNodes[3]);
-                            String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
                             Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[6], Metodo_Funcion.parametros);
                         }
                         break;
@@ -428,8 +429,6 @@ namespace SBScript
                     break;
             }
             return result;
-
-
         }
 
         public static String resolverOperacion(ParseTreeNode root)

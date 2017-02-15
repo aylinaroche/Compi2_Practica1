@@ -94,7 +94,6 @@ namespace SBScript
                 }
             }
 
-
             if (rutaAux != "")
             {
                 System.IO.FileInfo fi = new System.IO.FileInfo(ruta);
@@ -165,8 +164,10 @@ namespace SBScript
                 ParseTreeNode nodoPrincipal = Metodo_Funcion.buscarMetodo("MAIN");
                 if (nodoPrincipal != null)
                 {
-                    PrimerRecorrido.pilaAmbito.Push("Principal");
+                    Variables.pilaAmbito.Push("Principal");
+                    Variables.nivelAmbito += 1;
                     SegundoRecorrido.action(nodoPrincipal);
+
                 }
                 imprimirVariables();
                 imprimir();
@@ -221,6 +222,11 @@ namespace SBScript
         private void btnReporte_Click(object sender, EventArgs e)
         {
             Reporte.generarReporte();
+        }
+
+        private void btnAlbum_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
