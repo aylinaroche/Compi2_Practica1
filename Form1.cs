@@ -50,6 +50,7 @@ namespace SBScript
             String nombre = "Doc" + num;
             return nombre;
         }
+
         private void btnElminarPestania_Click(object sender, EventArgs e)
         {
 
@@ -64,22 +65,36 @@ namespace SBScript
             openFileDialog1.Filter = "txt files (*.txt)|*.txt| SBS files (*.*)|*.sbs";
             openFileDialog1.FilterIndex = 2;
             openFileDialog1.RestoreDirectory = true;
+            String texto = "";
+            String nombre = "";
 
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 System.IO.StreamReader sr = new System.IO.StreamReader(openFileDialog1.FileName);
-                // MessageBox.Show(openFileDialog1.FileName);
+                String[] dato = openFileDialog1.FileName.Split('\\');
+                nombre = dato[dato.Length-1];
                 ruta = openFileDialog1.FileName;
-                var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
-                rich.Text = sr.ReadToEnd();
+               texto = sr.ReadToEnd();
                 sr.Close();
             }
 
             txtConsola.Text += ">> Archivo abierto correctamente.\n";
-            Pestania p = new Pestania();
-            p.nombre = tabControl1.SelectedTab.ToString();
+             Pestania p = new Pestania();
+             p.nombre = nombre;
             p.ruta = ruta;
-            listaRuta.Add(p);
+                        listaRuta.Add(p);
+            tabControl1.TabPages.Add(nombre);
+            foreach (TabPage tab in tabControl1.TabPages)
+            {
+                RichTextBox rich = new RichTextBox();
+                rich.Name = "Tab";
+                rich.Width = 450;
+                rich.Height = 350;
+                tab.Controls.Add(rich);
+                rich.Text = texto;
+            }
+            var richt = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
+            
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -196,7 +211,7 @@ namespace SBScript
                 Variable v = (Variable)Variables.listaVariables[i];
                 txtConsola.Text += " -> "+v.tipo+", "+ v.nombre+", "+v.valor+", "+v.ambito+"\n";
             }
-            txtConsola.Text += "\n ********************* \n\n";
+            txtConsola.Text += "********************* \n";
             for (int i = 0; i < Metodo_Funcion.listaMetodoFuncion.Count; i++)
             {
                 MF m = (MF)Metodo_Funcion.listaMetodoFuncion[i];
@@ -208,7 +223,7 @@ namespace SBScript
 
                 }
             }
-            txtConsola.Text += "\n ********************* \n\n\n";
+            txtConsola.Text += "\n ********************* \n\n";
         }
 
         public void Limpiar()

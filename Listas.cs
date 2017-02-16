@@ -9,7 +9,7 @@ namespace SBScript
 {
     class Listas
     {
-        public static int incerteza = 0;
+        public static double incerteza = 0.01;
         public static string ruta = "";
         public static ArrayList MensajeConsola = new ArrayList();
 
@@ -72,7 +72,7 @@ namespace SBScript
 
                 if (ascii1 > ascii2)
                 {
-                    return true;
+                    return false;
                 }
                 else if (ascii1 < ascii2)
                 {
@@ -81,14 +81,7 @@ namespace SBScript
 
             }
 
-            if (nueva1.Length >= nueva2.Length)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return true;
         }
 
         public static String quitarEspaciosInicio(String cadena)

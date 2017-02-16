@@ -91,12 +91,40 @@ namespace SBScript
             return nodo;
         }
 
-        public static void agregarParametroTemp(String t, String n)
+        public static void agregarParametroTemp(String t, String v)
         {
             Parametro p = new Parametro();
-            p.nombre = n;
+            p.valor = v;
             p.tipo = t;
             parametrosTemp.Add(p);
+        }
+
+        public static void guardarParametro(String nombre)
+        {
+            for (int i = 0; i < listaMetodoFuncion.Count; i++)
+            {
+                MF mf = (MF)listaMetodoFuncion[i];
+                if (mf.nombre == nombre && parametrosTemp.Count == mf.parametro.Count)
+                {
+                    for (int j = 0; j < parametrosTemp.Count; j++)
+                    {
+                        Parametro p1 = (Parametro)parametrosTemp[j];
+                        Parametro p2 = (Parametro)mf.parametro[j];
+                        if (p2.tipo == "String")
+                        {
+                            PrimerRecorrido.concatenar = true;
+                        }
+                        else
+                        {
+                            PrimerRecorrido.concatenar = false;
+                        }
+
+                        Variables.crearVariable(p2.tipo, p2.nombre, p1.valor, Variables.pilaAmbito.Peek().ToString());
+
+                    }
+                }
+
+            }
         }
     }
 
@@ -115,7 +143,7 @@ namespace SBScript
     {
         public String nombre;
         public String tipo;
-
+        public String valor;
     }
 
 }

@@ -53,7 +53,7 @@ namespace SBScript
                     salida.WriteLine("<tr>");
                     salida.WriteLine("<th><font color=\"white\">" + s.tipo + "</font></th>");
                     salida.WriteLine("<th><font color=\"white\">" + s.nombre + "</font></th>");
-                    salida.WriteLine("<th><font color=\"white\">" + s.tipo + "</font></th>");
+                    salida.WriteLine("<th><font color=\"white\">" + s.archivo + "</font></th>");
                     salida.WriteLine("<th><font color=\"white\">" + s.fila + "</font></th>");
                     salida.WriteLine("<th><font color=\"white\">" + s.columna + "</font></th>");
                 }
@@ -93,12 +93,14 @@ namespace SBScript
         public String tipo;
         public int fila;
         public int columna;
+        public String archivo;
         public Error(String nombre, String tipo, int fila, int columna)
         {
             this.nombre = nombre;
             this.tipo = tipo;
             this.fila = fila;
             this.columna = columna;
+            this.archivo = Listas.archivo.Peek().ToString();
         }
 
 

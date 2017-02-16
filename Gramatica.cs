@@ -207,6 +207,7 @@ namespace SBScript
 
             RETORNAR.Rule = retornar + OP + puntoComa
                 | retornar + OP;
+                //| retornar + puntoComa;
 
             MAIN.Rule = principal + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
@@ -228,7 +229,6 @@ namespace SBScript
                 |mientras + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
             SWITCH.Rule = selecciona + parentesisA + OP + parentesisC + CASE
-                       | selecciona + parentesisA + OP + parentesisC + llaveA + CASE + llaveC
                        | selecciona + parentesisA + OP + parentesisC + CASE + DEFAULT
                        | selecciona + parentesisA + OP + parentesisC + DEFAULT;
 
@@ -304,7 +304,7 @@ namespace SBScript
             #region Preferencias
             this.Root = ENTRADA;
             //MarkPunctuation(si,num);
-           // MarkPunctuation(INSTRUCCIONES);
+            // MarkPunctuation(INSTRUCCIONES);
 
             //Para esto utilizaremos la funcion RegisterOperators
             //El primer parametro indica el nivel de precedencia del 
@@ -312,14 +312,17 @@ namespace SBScript
             //tambien se indica el tipo de asociatividad que es izquierda para este caso
             // y se agrega el operador entre "".
 
-            this.RegisterOperators(1, Associativity.Left, "||");
-            this.RegisterOperators(2, Associativity.Left, "&&");
-            this.RegisterOperators(3, Associativity.Left, "!&");
-            this.RegisterOperators(4, Associativity.Right, "!");
-            this.RegisterOperators(5, Associativity.Left, "==");
-            this.RegisterOperators(6, Associativity.Left, "+", "-");
-            this.RegisterOperators(7, Associativity.Left, "*", "/");
-           // this.RegisterOperators(6, Associativity.Left, "==", "!=");
+            this.RegisterOperators(1, Associativity.Left, "==");
+             this.RegisterOperators(2, Associativity.Left, "+", "-");
+            this.RegisterOperators(3, Associativity.Left, "*", "/","%");
+            this.RegisterOperators(4, Associativity.Right, "^");
+            //this.RegisterOperators(4, Associativity.Neutral, "- ");
+            this.RegisterOperators(5, Associativity.Left, "!=","<",">","<=",">=","~");
+            this.RegisterOperators(6, Associativity.Left, "||");
+            this.RegisterOperators(7, Associativity.Left, "!&");
+            this.RegisterOperators(8, Associativity.Left, "&&");
+            this.RegisterOperators(9, Associativity.Left, "!");
+            // this.RegisterOperators(6, Associativity.Left, "==", "!=");
             #endregion
         }
     }

@@ -38,7 +38,7 @@ namespace SBScript
             {
                 if (tipo == "String")
                 {
-                    Reporte.agregarMensajeError("Tipo incorrecto", "Error Semantico", 0, 0);
+                    Reporte.agregarMensajeError("Tipo incorrecto: '"+nombre+"'", "Error Semantico", 0, 0);
                     return false;
                 }
                 else if (tipo == "Bool")
@@ -53,7 +53,7 @@ namespace SBScript
                     }
                     else
                     {
-                        Reporte.agregarMensajeError("Tipo Incorrecto", "Error Semantico", 0, 0);
+                        Reporte.agregarMensajeError("Tipo Incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
                         return false;
                     }
                 }
@@ -62,14 +62,14 @@ namespace SBScript
             {
                 if (tipo == "Number")
                 {
-                    Reporte.agregarMensajeError("Tipo incorrecto", "Error Semantico", 0, 0);
+                    Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
                     return false;
                 }
                 if (tipo == "Bool")
                 {
                     if (!(valor == "1" || valor == "0" || valor == ""))
                     {
-                        Reporte.agregarMensajeError("Tipo incorrecto", "Error Semantico", 0, 0);
+                        Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
                         return false;
                     }
 
