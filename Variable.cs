@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Irony.Parsing;
 
 namespace SBScript
 {
@@ -23,13 +24,14 @@ namespace SBScript
         public static int nivelAmbito = 0;
         public static Boolean crearVariable(String tipo, String nombre, String valor, String ambito)
         {
+            ParseTreeNode nodo = Listas.nodoActual;
             Variable v = null;
             for (int a = 0; a < listaVariables.Count; a++)
             {
                 v = (Variable)listaVariables[a];
                 if (v.nombre == nombre && v.tipo == tipo && v.ambito == ambito)
                 {
-                    Reporte.agregarMensajeError("La variable '" + v.nombre + "' ya existe", "Error Semantico", 0, 0);
+                    Reporte.agregarMensajeError("La variable '" + v.nombre + "' ya existe", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                     return false;
                 }
             }
@@ -38,7 +40,7 @@ namespace SBScript
             {
                 if (tipo == "String")
                 {
-                    Reporte.agregarMensajeError("Tipo incorrecto: '"+nombre+"'", "Error Semantico", 0, 0);
+                    Reporte.agregarMensajeError("Tipo incorrecto: '"+nombre+"'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                     return false;
                 }
                 else if (tipo == "Bool")
@@ -53,7 +55,7 @@ namespace SBScript
                     }
                     else
                     {
-                        Reporte.agregarMensajeError("Tipo Incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
+                        Reporte.agregarMensajeError("Tipo Incorrecto '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                         return false;
                     }
                 }
@@ -62,14 +64,14 @@ namespace SBScript
             {
                 if (tipo == "Number")
                 {
-                    Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
+                    Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                     return false;
                 }
                 if (tipo == "Bool")
                 {
                     if (!(valor == "1" || valor == "0" || valor == ""))
                     {
-                        Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", 0, 0);
+                        Reporte.agregarMensajeError("Tipo incorrecto '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                         return false;
                     }
 
@@ -87,16 +89,17 @@ namespace SBScript
 
         public static Boolean asignarVariable(String nombre, String valor, String ambito)
         {
+            ParseTreeNode nodo = Listas.nodoActual;
             for (int a = listaVariables.Count - 1; a > -1; a--)
             {
                 Variable v = (Variable)listaVariables[a];
-                if (v.nombre == nombre && v.ambito == ambito)
+                if (v.nombre == nombre)
                 {
                     if (PrimerRecorrido.concatenar == false)//Numero
                     {
                         if (v.tipo == "String")
                         {
-                            Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", 0, 0);
+                            Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                             return false;
                         }
                         else if (v.tipo == "Bool")
@@ -111,7 +114,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", 0, 0);
+                                Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                                 return false;
                             }
                         }
@@ -120,14 +123,14 @@ namespace SBScript
                     {
                         if (v.tipo == "Number")
                         {
-                            Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", 0, 0);
+                            Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                             return false;
                         }
                         if (v.tipo == "Bool")
                         {
                             if (!(valor == "1" || valor == "0" || valor == ""))
                             {
-                                Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", 0, 0);
+                                Reporte.agregarMensajeError("Tipo incorrecto al asignar variable '" + nombre + "'", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                                 return false;
                             }
                         }
@@ -165,7 +168,7 @@ namespace SBScript
                 Variable v = (Variable)listaVariables[i];
                 if (v.nivel == nivel)
                 {
-                    listaVariables.Remove(i);
+                    listaVariables.Remove(v);
                 }
             }
             Variables.pilaAmbito.Pop();

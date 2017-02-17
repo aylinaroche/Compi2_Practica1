@@ -15,8 +15,7 @@ namespace SBScript
     {
         public static String mensajeAux = "";
         public static Boolean concatenar = false;
-        //
-        
+        public static Boolean boolean = false;
 
         public static String action(ParseTreeNode nodo)
         {
@@ -41,7 +40,7 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
-                           Variables.pilaAmbito.Push("Global");
+                            Variables.pilaAmbito.Push("Global");
                             Variables.nivelAmbito = 0;
                             action(nodo.ChildNodes[0]);
                         }
@@ -85,6 +84,12 @@ namespace SBScript
                     }
                     else if (nodo.ChildNodes.Count == 3)
                     {
+                        Listas.incluir.Push(Listas.archivo.Peek().ToString());
+                        Listas.nodoActual = nodo.ChildNodes[0];
+                        String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                        Form1 f = new Form1();
+                        f.incluirArchivo(dato[0] + ".sbs");
+                        Listas.incluir.Pop();
                     }
                     break;
 
@@ -108,7 +113,7 @@ namespace SBScript
                             String ambito = Variables.pilaAmbito.Peek().ToString();
                             for (int i = 0; i < var.Length - 1; i++)
                             {
-                                Variables.crearVariable(tipo, var[i], "",ambito);
+                                Variables.crearVariable(tipo, var[i], "", ambito);
                             }
                         }
                         else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
@@ -118,12 +123,14 @@ namespace SBScript
                             String[] var = (vars.Split(','));
                             String asig = action(nodo.ChildNodes[3]);
                             String ambito = Variables.pilaAmbito.Peek().ToString();
-                            if (asig != "error") {
+                            if (asig != "error")
+                            {
                                 for (int i = 0; i < var.Length - 1; i++)
                                 {
                                     Variables.crearVariable(tipo, var[i], asig, ambito);
                                 }
-                            }else
+                            }
+                            else
                             {
                                 Reporte.agregarMensajeError("Error al declarar la expresion en una variable global", "Error Semantico", 0, 0);
                             }
@@ -153,7 +160,7 @@ namespace SBScript
                             String id = action(nodo.ChildNodes[0]);
                             String asig = action(nodo.ChildNodes[2]);
                             Variable v = new Variable();
-                            Reporte.agregarMensajeError("Error al asignar una expresion en una variable global","Error Semantico",0,0);
+                            Reporte.agregarMensajeError("Error al asignar una expresion en una variable global", "Error Semantico", 0, 0);
                         }
                         break;
                     }
@@ -203,15 +210,16 @@ namespace SBScript
                 case "METODO":
                     {
                         Metodo_Funcion.parametros.Clear();
+                        ArrayList lista = new ArrayList();
                         if (nodo.ChildNodes.Count == 6)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
-                            Metodo_Funcion.agregarMF("Void", dato[0], "", null, null);
+                            Metodo_Funcion.agregarMF("Void", dato[0], "", null, lista);
                         }
                         else if (nodo.ChildNodes.Count == 7)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
-                            Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[5], null);
+                            Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[5], lista);
                         }
                         else if (nodo.ChildNodes.Count == 8)
                         {
@@ -224,11 +232,12 @@ namespace SBScript
                 case "FUNCION":
                     {
                         Metodo_Funcion.parametros.Clear();
+                        ArrayList lista = new ArrayList();
                         if (nodo.ChildNodes.Count == 6)
                         {
                             String tipo = action(nodo.ChildNodes[0]);
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
-                            Metodo_Funcion.agregarMF(tipo, dato[0], "", null, null);
+                            Metodo_Funcion.agregarMF(tipo, dato[0], "", null, lista);
                         }
                         else if (nodo.ChildNodes.Count == 7)
                         {
@@ -241,7 +250,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Metodo_Funcion.agregarMF(tipo, dato[0], "", nodo.ChildNodes[5], null);
+                                Metodo_Funcion.agregarMF(tipo, dato[0], "", nodo.ChildNodes[5], lista);
                             }
 
                         }
@@ -284,9 +293,13 @@ namespace SBScript
                 case "MAIN":
                     {
                         Metodo_Funcion.parametros.Clear();
+                        ArrayList vacio = new ArrayList();
                         if (nodo.ChildNodes.Count == 6)
                         {
-                            Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], null);
+                            if (Listas.incluir.Count == 0)
+                            {
+                                Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], vacio);
+                            }
                         }
                         break;
                     }
@@ -444,11 +457,12 @@ namespace SBScript
             {
                 case 1:
                     String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
-
+                    Listas.nodoActual = root.ChildNodes[0];
                     if (dato[1] == "cadena)")
                     {
                         concatenar = true;
-                        return dato[0];
+                        String cadena = dato[0].Substring(0, dato[0].Length - 1);
+                        return cadena;
                     }
                     else if (dato[1] == "numero)")
                     {
@@ -468,14 +482,15 @@ namespace SBScript
                         }
                         else
                         {
-                            //Reporte.agregarMensajeError("El id indicado no existe", "Error Semantico", 0, 0);
+                            Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                             concatenar = true;
                             return "error";
                         }
-                     
+
                     }
                     else if (dato[1] == "Keyword)")
                     {
+                        boolean = true;
                         concatenar = false;
                         if (dato[0] == "true " || dato[0] == "true")
                         {
@@ -496,44 +511,79 @@ namespace SBScript
                         return "";
                     }
 
+                case 2:
+                    String res = action(root.ChildNodes[1]);
+                    try
+                    {
+                        if (concatenar == false)
+                        {
+                            Double v1 = Convert.ToDouble(res);
+                            v1 = v1 * (-1);
+                            res = v1.ToString();
+                            return res;
+                        }
+                        else
+                        {
+                            return "0";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show("E");
+                    }
+                    return "";
 
                 case 3: //Nodo binario
                     String resultado = "";
                     String E1 = "";
                     String E2 = "";
-
+                    Double var1, var2;
 
                     switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 1))
                     {
 
                         case "+": //E+E
+                            boolean = false;
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            Boolean c1 = concatenar;
+                            Boolean c1 = PrimerRecorrido.concatenar;
+                            Boolean b1 = boolean;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
-                            Boolean c2 = concatenar;
-                            if (c1 == true || c2 == true)
+                            Boolean c2 = PrimerRecorrido.concatenar;
+                            Boolean b2 = boolean;
+                            if (b1 == false || b2 == false)
                             {
-                                resultado = E1 + E2;
-                                concatenar = true;
-                                return resultado;
+                                if (c1 == true || c2 == true)
+                                {
+                                    resultado = E1 + E2;
+                                    PrimerRecorrido.concatenar = true;
+                                    return resultado;
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        Double r = v1 + v2;
+                                        resultado = r.ToString();
+                                        PrimerRecorrido.concatenar = false;
+                                        return resultado;
+
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
                             }
                             else
                             {
-                                try
+                                if (E1 == "1" || E2 == "1")
                                 {
-                                    Double v1 = Convert.ToDouble(E1);
-                                    Double v2 = Convert.ToDouble(E2);
-                                    Double r = v1 + v2;
-                                    resultado = r.ToString();
-                                    concatenar = false;
-                                    return resultado;
-
+                                    return "1";
                                 }
-                                catch (Exception e)
-                                {
-                                    return "error";
-                                }
-
+                                return "0";
                             }
 
                         case "-": //E-E
@@ -556,14 +606,19 @@ namespace SBScript
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             try
                             {
-                                Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2); ;
+                                Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
                                 resultado = r.ToString();
+                                if (resultado == "NaN" || resultado == "∞")
+                                {
+                                    Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "0";
+                                }
                                 return resultado;
 
                             }
                             catch (Exception e)
                             {
-                                return "error";
+                                MessageBox.Show("E");
                                 return "";
                             }
                         case "*": //E*E
@@ -581,7 +636,356 @@ namespace SBScript
                                 MessageBox.Show("E");
                                 return "";
                             }
-                     
+                        case "% ": //E*E
+                            E1 = expresion(root.ChildNodes.ElementAt(0));
+                            E2 = expresion(root.ChildNodes.ElementAt(2));
+                            try
+                            {
+                                Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
+                                resultado = r.ToString();
+                                return resultado;
+
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("E");
+                                return "";
+                            }
+
+                        case "> ":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "1";
+                                    }
+                                    return "0";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 > v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+
+                        case "< ":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "0";
+                                    }
+                                    return "1";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 < v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case ">=":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "1";
+                                    }
+                                    return "0";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 >= v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case "<=":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "0";
+                                    }
+                                    return "1";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 <= v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case "==":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "1";
+                                    }
+                                    return "0";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 == v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case "!=":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.compararCadenas(E1, E2))
+                                    {
+                                        return "false";
+                                    }
+                                    return "true";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        if (v1 != v2)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case "~ ":
+                            try
+                            {
+                                E1 = expresion(root.ChildNodes.ElementAt(0));
+                                c1 = PrimerRecorrido.concatenar;
+                                E2 = expresion(root.ChildNodes.ElementAt(2));
+                                c2 = PrimerRecorrido.concatenar;
+                                if (c1 == true || c2 == true)
+                                {
+                                    PrimerRecorrido.concatenar = true;
+                                    if (Listas.semejarCadenas(E1.ToLower(), E2.ToLower()))
+                                    {
+                                        return "1";
+                                    }
+                                    return "0";
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        PrimerRecorrido.concatenar = false;
+                                        Double abs = Math.Abs(v1 - v2);
+                                        if (abs < Listas.incerteza)
+                                        {
+                                            return "1";
+                                        }
+                                        return "0";
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        MessageBox.Show("E");
+                                        return "";
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                MessageBox.Show("E");
+                                return "error";
+                            }
+                        case "&&":
+
+                            E1 = expresion(root.ChildNodes.ElementAt(0));
+                            E2 = expresion(root.ChildNodes.ElementAt(2));
+                            try
+                            {
+                                Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
+                                if (E1 == "1" && E2 == "1" || E1 == "0" && E2 == "0")
+                                {
+                                    return "1";
+                                }
+                                else
+                                {
+                                    return "0";
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("E");
+                                return "";
+                            }
+
+                        case "||":
+                            E1 = expresion(root.ChildNodes.ElementAt(0));
+                            E2 = expresion(root.ChildNodes.ElementAt(2));
+                            try
+                            {
+                                if (E1 == "1" || E2 == "1")
+                                {
+                                    return "1";
+                                }
+                                else
+                                {
+                                    return "0";
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("E");
+                                return "";
+                            }
+
+
                         default: //(E)
                             return expresion(root.ChildNodes.ElementAt(1));
                     }
@@ -589,6 +993,6 @@ namespace SBScript
             }
             return "";
         }
-      
+
     }
 }

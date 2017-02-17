@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Irony.Parsing;
 using System.Threading.Tasks;
 
 namespace SBScript
@@ -12,7 +13,9 @@ namespace SBScript
         public static double incerteza = 0.01;
         public static string ruta = "";
         public static ArrayList MensajeConsola = new ArrayList();
-
+        public static Stack archivo = new Stack();
+        public static ParseTreeNode nodoActual = null;
+        public static Stack incluir = new Stack();
 
         public static Boolean compararCadenas(String cadena1, String cadena2)
         {

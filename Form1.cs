@@ -16,7 +16,8 @@ namespace SBScript
     public partial class Form1 : Form
     {
         String ruta = "";
-        ArrayList listaRuta = new ArrayList();
+        public static ArrayList listaRuta = new ArrayList();
+        public static String nombreTab;
         int num = 0;
         public Form1()
         {
@@ -53,36 +54,39 @@ namespace SBScript
 
         private void btnElminarPestania_Click(object sender, EventArgs e)
         {
-
             tabControl1.TabPages.RemoveAt(tabControl1.SelectedIndex);
         }
 
         private void btnAbrir_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
-
-            openFileDialog1.InitialDirectory = "C:\\Users\\Aylin\\Documents";
+ openFileDialog1.InitialDirectory = "C:\\Users\\Aylin\\Documents";
             openFileDialog1.Filter = "txt files (*.txt)|*.txt| SBS files (*.*)|*.sbs";
             openFileDialog1.FilterIndex = 2;
             openFileDialog1.RestoreDirectory = true;
             String texto = "";
             String nombre = "";
-
+            String carpeta = "";
             if (openFileDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 System.IO.StreamReader sr = new System.IO.StreamReader(openFileDialog1.FileName);
                 String[] dato = openFileDialog1.FileName.Split('\\');
-                nombre = dato[dato.Length-1];
+                nombre = dato[dato.Length - 1];
                 ruta = openFileDialog1.FileName;
-               texto = sr.ReadToEnd();
+                for(int i = 0; i < dato.Length - 1; i++)
+                {
+                    carpeta += dato[i] + "\\";
+                }
+                texto = sr.ReadToEnd();
                 sr.Close();
             }
 
             txtConsola.Text += ">> Archivo abierto correctamente.\n";
-             Pestania p = new Pestania();
-             p.nombre = nombre;
+            Pestania p = new Pestania();
+            p.nombre = nombre;
             p.ruta = ruta;
-                        listaRuta.Add(p);
+            p.carpeta = carpeta;
+            listaRuta.Add(p);
             tabControl1.TabPages.Add(nombre);
             foreach (TabPage tab in tabControl1.TabPages)
             {
@@ -94,7 +98,7 @@ namespace SBScript
                 rich.Text = texto;
             }
             var richt = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
-            
+
         }
 
         private void btnGuardar_Click(object sender, EventArgs e)
@@ -160,20 +164,19 @@ namespace SBScript
             txtConsola.Text += ">> Guardar archivo como.\n";
         }
 
-        class Pestania
-        {
-            public String nombre;
-            public String ruta;
-        }
-
         private void btnEjecutar_Click(object sender, EventArgs e)
         {
             Limpiar();
+            Listas.archivo.Clear();
+            String nombre = tabControl1.SelectedTab.AccessibilityObject.Name.ToString();
+            Listas.archivo.Push(nombre);
+            nombreTab = nombre;
             var rich = (RichTextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls[0];
             ParseTreeNode resultado = Analizador.analizar(rich.Text);
 
             if (resultado != null)
             {
+                
                 MessageBox.Show("El arbol fue construido correctamente");
                 PrimerRecorrido.action(resultado);
                 ParseTreeNode nodoPrincipal = Metodo_Funcion.buscarMetodo("MAIN");
@@ -209,13 +212,13 @@ namespace SBScript
             for (int i = 0; i < Variables.listaVariables.Count; i++)
             {
                 Variable v = (Variable)Variables.listaVariables[i];
-                txtConsola.Text += " -> "+v.tipo+", "+ v.nombre+", "+v.valor+", "+v.ambito+"\n";
+                txtConsola.Text += " -> " + v.tipo + ", " + v.nombre + ", " + v.valor + ", " + v.ambito + "\n";
             }
             txtConsola.Text += "********************* \n";
             for (int i = 0; i < Metodo_Funcion.listaMetodoFuncion.Count; i++)
             {
                 MF m = (MF)Metodo_Funcion.listaMetodoFuncion[i];
-                txtConsola.Text += " -> " + m.tipo + ", " + m.nombre +"\n";
+                txtConsola.Text += " -> " + m.tipo + ", " + m.nombre + "\n";
                 for (int j = 0; j < m.parametro.Count; j++)
                 {
                     Parametro p = (Parametro)m.parametro[j];
@@ -234,6 +237,7 @@ namespace SBScript
             Reporte.errores.Clear();
             txtConsola.Clear();
         }
+
         private void btnReporte_Click(object sender, EventArgs e)
         {
             Reporte.generarReporte();
@@ -243,5 +247,87 @@ namespace SBScript
         {
 
         }
+
+        private void nombre()
+        {
+            String m = tabControl1.TabPages[tabControl1.SelectedIndex].AccessibilityObject.Name;
+            String n = tabControl1.SelectedTab.AccessibilityObject.Name.ToString();
+            nombreTab = n;
+          
+        }
+        public void incluirArchivo(String archivo)
+        {
+            int i = 0;
+            String carpeta = "";
+            if (listaRuta.Count == 0)
+            {
+                Reporte.agregarMensajeError("No se ha podido incluir el archivo ya que no esta guardado","Error Semantico",Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                return;
+            }
+          
+            for (i = 0; i < listaRuta.Count; i++) //Si la ruta esta vacia
+            {
+                Pestania p = (Pestania)listaRuta[i];
+                if (p.nombre == nombreTab)
+                {
+                    carpeta = p.carpeta;
+                }
+            }
+            
+            if (carpeta == "")
+            {
+                Reporte.agregarMensajeError("No se ha podido incluir el archivo ya que no esta guardado", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                return;
+            }else
+            {
+                String ruta =carpeta+archivo;
+                String texto = "";
+                try
+                {
+                    System.IO.StreamReader sr = new System.IO.StreamReader(ruta);
+                    ruta = openFileDialog1.FileName;
+                    texto = sr.ReadToEnd();
+                    sr.Close();
+
+                    Pestania p = new Pestania();
+                    p.nombre = archivo;
+                    p.ruta = ruta;
+                    p.carpeta = carpeta;
+                    listaRuta.Add(p);
+                    
+                    MessageBox.Show(archivo);
+                    txtConsola.Text += "\n* * * * * * * * " + archivo + " * * * * * * * ";
+                    ParseTreeNode resultado = Analizador.analizar(texto);
+
+                    if (resultado != null)
+                    {
+                        Listas.archivo.Push(archivo);
+                        MessageBox.Show("El arbol fue construido correctamente");
+                        PrimerRecorrido.action(resultado);
+                        imprimirVariables();
+                        imprimir();
+                        Listas.archivo.Pop();
+                    }
+                    else
+                    {
+                        MessageBox.Show("ERROR: Deberia de revisar la cadena de entrada");
+                    }
+
+
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show("Error;");
+                }
+            }
+        }
+
+        class Pestania
+        {
+            public String nombre;
+            public String ruta;
+            public String carpeta;
+        }
     }
+
 }

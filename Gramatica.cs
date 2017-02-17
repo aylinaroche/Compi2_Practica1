@@ -237,36 +237,16 @@ namespace SBScript
 
             DEFAULT.Rule = defecto + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
-            FOR.Rule = para + parentesisA + PARA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
-
-            PARA.Rule = tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + OP;
+            FOR.Rule = para + parentesisA + tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + aumentar + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                | para + parentesisA + tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + disminuir + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
             OP.Rule = E;
-
-            OpRELACIONAL.Rule = R;
-
-            R.Rule = parentesisA + R + parentesisC
-                    | R + mayor + R
-                    | R + menor + R
-                    | R + mayori + R
-                    | R + menori + R
-                    | R + igualDoble + R
-                    | R + diferente + R
-                    | numero
-                    | id
-                    | cadena
-                    | falso
-                    | verdadero;
-
-            OpLOGICO.Rule = L;
 
             L.Rule = parentesisA + L + parentesisC
                     | L + or + L
                     | L + and + L
                     | not + L
                     | OpRELACIONAL;
-
-            OpARITMETICO.Rule = E;
 
             E.Rule = parentesisA + E + parentesisC
                 | E + mas + E

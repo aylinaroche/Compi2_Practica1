@@ -22,14 +22,20 @@ namespace SBScript
                 MF m = (MF)listaMetodoFuncion[i];
                 if (m.tipo.Equals(t) && m.nombre.Equals(n) && p.Count == m.parametro.Count)
                 {
+                    int cantidad = 0;
                     for (int j = 0; j < p.Count; j++)
                     {
                         Parametro p1 = (Parametro)p[j];
                         Parametro p2 = (Parametro)m.parametro[j];
                         if (p1.nombre == p2.nombre && p1.tipo == p2.tipo)
                         {
-                            existe = true;
+                            // existe = true;
+                            cantidad += 1;
                         }
+                    }
+                    if (cantidad == m.parametro.Count)
+                    {
+                        existe = true;
                     }
                     if (parametros.Count == 0 && m.parametro.Count == 0)
                     {
@@ -49,7 +55,7 @@ namespace SBScript
             }
             else
             {
-                Reporte.agregarError("Ya existe un metodo o funcion llamada " + n, "Error Semantico", 0, 0);
+                Reporte.agregarError("Ya existe un metodo o funcion llamada " + n, "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                 Listas.MensajeConsola.Add("> Ya existe un metodo o funcion llamada " + n + "\n");
             }
 

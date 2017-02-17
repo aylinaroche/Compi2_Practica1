@@ -103,6 +103,14 @@ namespace SBScript
             this.archivo = Listas.archivo.Peek().ToString();
         }
 
+        public String Hola(String a)
+        {
+            return "";
+        }
 
+        public String Hola(String a,String b)
+        {
+            return "";
+        }
     }
 }

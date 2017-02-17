@@ -19,10 +19,15 @@ namespace SBScript
         public static String sentencia = "";
         public static String retorno = "";
         public static String tipo = "";
+        public Boolean continuar = false;
+        public Boolean detener = false;
+        public Boolean retornar = false;
+
         public static String action(ParseTreeNode nodo)
         {
             String result = null;
             String variables = "";
+            //   Listas.nodoActual = nodo;
             switch (nodo.Term.Name.ToString())
             {
                 case "TIPO":
@@ -64,7 +69,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Reporte.agregarMensajeError("No puede declarar.", "Error Semantico", 0, 0);
+                                Reporte.agregarMensajeError("No puede declarar.", "Error Semantico", nodo.Token.Location.Line, nodo.Token.Location.Column);
                             }
                         }
                         break;
@@ -181,11 +186,11 @@ namespace SBScript
                         {
                             //if (nodo.ChildNodes[1].Term.Name.ToString() == "OP")
                             //{
-                                retorno = action(nodo.ChildNodes[1]);
+                            retorno = action(nodo.ChildNodes[1]);
                             //}
                             //else
                             //{
-                                //retorno solo
+                            //retorno solo
                             //}
                         }
                         else if (nodo.ChildNodes.Count == 3)
@@ -220,7 +225,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", 0, 0);
+                                Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                             }
                         }
                         else if (nodo.ChildNodes.Count == 4)
@@ -241,7 +246,7 @@ namespace SBScript
                                 }
                                 else
                                 {
-                                    Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", 0, 0);
+                                    Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 }
                             }
                             else
@@ -258,7 +263,7 @@ namespace SBScript
                                 }
                                 else
                                 {
-                                    Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", 0, 0);
+                                    Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 }
                             }
 
@@ -279,7 +284,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", 0, 0);
+                                Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                             }
 
                         }
@@ -343,7 +348,10 @@ namespace SBScript
                             String restriccion = action(nodo.ChildNodes[2]);
                             if (restriccion == "true" || restriccion == "1")
                             {
+                                Variables.pilaAmbito.Push("Si");
+                                Variables.nivelAmbito += 1;
                                 action(nodo.ChildNodes[5]);
+                                Variables.eliminarAmbito();
                             }
                         }
                         else if (nodo.ChildNodes.Count == 8)
@@ -351,11 +359,17 @@ namespace SBScript
                             String restriccion = action(nodo.ChildNodes[2]);
                             if (restriccion == "true" || restriccion == "1")
                             {
+                                Variables.pilaAmbito.Push("Si");
+                                Variables.nivelAmbito += 1;
                                 action(nodo.ChildNodes[5]);
+                                Variables.eliminarAmbito();
                             }
                             else
                             {
+                                Variables.pilaAmbito.Push("Else");
+                                Variables.nivelAmbito += 1;
                                 action(nodo.ChildNodes[7]);
+                                Variables.eliminarAmbito();
                             }
                         }
                         break;
@@ -374,10 +388,66 @@ namespace SBScript
                     }
                 case "CICLO":
                     {
+                        int limite = 0;
                         if (nodo.ChildNodes.Count == 7)
                         {
-                            action(nodo.ChildNodes[2]);
-                            action(nodo.ChildNodes[5]);
+                            if (nodo.ChildNodes[0].Term.Name.ToString() == "Mientras")
+                            {
+                                Boolean w = false;
+                                String condicion = action(nodo.ChildNodes[2]);
+                                if (condicion == "1" || condicion == "true")
+                                {
+                                    w = true;
+                                }
+                                Variables.pilaAmbito.Push("Else");
+                                Variables.nivelAmbito += 1;
+                                while (w)
+                                {
+                                    action(nodo.ChildNodes[5]);
+                                    condicion = action(nodo.ChildNodes[2]);
+                                    if (condicion == "1" || condicion == "true")
+                                    {
+                                        w = true;
+                                    }
+                                    else
+                                    {
+                                        w = false;
+                                    }
+                                    limite += 1;
+                                    if (limite == 100)
+                                        break;
+                                }
+                                Variables.eliminarAmbito();
+                            }
+                            else
+                            {
+                                int limit = 0;
+                                Boolean w = true;
+                                String condicion = action(nodo.ChildNodes[2]);
+                                if (condicion == "0" || condicion == "false")
+                                {
+                                    w = false;
+                                }
+                                Variables.pilaAmbito.Push("Else");
+                                Variables.nivelAmbito += 1;
+                                while (!w)
+                                {
+                                    action(nodo.ChildNodes[5]);
+                                    condicion = action(nodo.ChildNodes[2]);
+                                    if (condicion == "1" || condicion == "true")
+                                    {
+                                        w = true;
+                                    }
+                                    else
+                                    {
+                                        w = false;
+                                    }
+                                    limit += 1;
+                                    if (limit == 100)
+                                        break;
+                                }
+                                Variables.eliminarAmbito();
+                            }
                         }
                         break;
                     }
@@ -391,7 +461,7 @@ namespace SBScript
                             {
                                 if (sentencia == "1" || sentencia == "0")
                                 {
-                                    Reporte.agregarMensajeError("Tipo Bool no permitido en Selecciona", "Error Semantico", 0, 0);
+                                    Reporte.agregarMensajeError("Tipo Bool no permitido en Selecciona", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 }
                                 tipo = "Number";
                             }
@@ -404,8 +474,8 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 6)
                         {
                             sentencia = action(nodo.ChildNodes[2]);
-                            result = action(nodo.ChildNodes[4]);
-                            if (result == "false")
+                            action(nodo.ChildNodes[4]);
+                            if (boolean == false)
                             {
                                 action(nodo.ChildNodes[5]);
                             }
@@ -419,13 +489,28 @@ namespace SBScript
                             result = action(nodo.ChildNodes[0]);
                             if (result == sentencia)
                             {
-                                boolean = true;
-
+                                Variables.pilaAmbito.Push("Case");
+                                Variables.nivelAmbito += 1;
+                                boolean = true; //Entro
+                                action(nodo.ChildNodes[3]);
+                                Variables.eliminarAmbito();
                             }
                         }
-                        else if (nodo.ChildNodes.Count == 5)
+                        else if (nodo.ChildNodes.Count == 6)
                         {
-                            action(nodo.ChildNodes[3]);
+                            action(nodo.ChildNodes[0]);
+                            if (boolean == false)//Si no ha hecho ningun case
+                            {
+                                result = action(nodo.ChildNodes[1]);
+                                if (result == sentencia)
+                                {
+                                    Variables.pilaAmbito.Push("Case");
+                                    Variables.nivelAmbito += 1;
+                                    boolean = true;
+                                    action(nodo.ChildNodes[4]);
+                                    Variables.eliminarAmbito();
+                                }
+                            }
                         }
                         break;
                     }
@@ -433,26 +518,59 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 5)
                         {
+                            Variables.pilaAmbito.Push("Default");
+                            Variables.nivelAmbito += 1;
                             action(nodo.ChildNodes[3]);
+                            Variables.eliminarAmbito();
                         }
                         break;
                     }
                 case "FOR":
                     {
-                        if (nodo.ChildNodes.Count == 7)
+                        if (nodo.ChildNodes.Count == 14)
                         {
-                            action(nodo.ChildNodes[2]);
-                            action(nodo.ChildNodes[5]);
-                        }
-                        break;
-                    }
-                case "PARA":
-                    {
-                        if (nodo.ChildNodes.Count == 8)
-                        {
-                            action(nodo.ChildNodes[3]);
-                            action(nodo.ChildNodes[5]);
-                            action(nodo.ChildNodes[7]);
+                            Variables.pilaAmbito.Push("For");
+                            Variables.nivelAmbito += 1;
+                            String[] dato = (nodo.ChildNodes.ElementAt(3).ToString().Split(' '));
+                            String asig = action(nodo.ChildNodes[5]);
+                            String ambito = Variables.pilaAmbito.Peek().ToString();
+                            Variables.crearVariable("Number", dato[0], asig, ambito);
+
+                            Boolean f = false;
+                            int valor = Int32.Parse(asig);
+                            String condicion = action(nodo.ChildNodes[7]);
+                            if (condicion == "1" || condicion == "true")
+                            {
+                                f = true;
+                            }
+                            int limite = 0;
+                            while (f)
+                            {
+                                action(nodo.ChildNodes[12]); //accion
+                                //
+                                if (nodo.ChildNodes[9].Term.Name.ToString() == "++")
+                                {
+                                    valor += 1;
+                                }
+                                else
+                                {
+                                    valor -= 1;
+                                }
+                                Variables.asignarVariable(dato[0], valor.ToString(), ambito);
+                                condicion = action(nodo.ChildNodes[7]);
+                                if (condicion == "1" || condicion == "true")
+                                {
+                                    f = true;
+                                }
+                                else
+                                {
+                                    f = false;
+                                }
+                                limite += 1;
+                                if (limite == 100)
+                                    break;
+                            }
+                            Variables.eliminarAmbito();
                         }
                         break;
                     }
@@ -508,7 +626,7 @@ namespace SBScript
             {
                 case 1:
                     String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
-
+                    Listas.nodoActual = root.ChildNodes[0];
                     if (dato[1] == "cadena)")
                     {
                         PrimerRecorrido.concatenar = true;
@@ -517,8 +635,9 @@ namespace SBScript
                     }
                     else if (dato[1] == "numero)")
                     {
+                        String n = Listas.quitarEspaciosFinal(dato[0]);
                         PrimerRecorrido.concatenar = false;
-                        return dato[0];
+                        return n;
                     }
                     else if (dato[1] == "id)")
                     {
@@ -533,7 +652,7 @@ namespace SBScript
                         }
                         else
                         {
-                            Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", 0, 0);
+                            Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                             // MessageBox.Show("ERROR"); //No encuentra el id
                             PrimerRecorrido.concatenar = true;
                             return "";
@@ -663,7 +782,7 @@ namespace SBScript
                                 resultado = r.ToString();
                                 if (resultado == "NaN" || resultado == "∞")
                                 {
-                                    Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", 0, 0);
+                                    Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                     return "0";
                                 }
                                 return resultado;
