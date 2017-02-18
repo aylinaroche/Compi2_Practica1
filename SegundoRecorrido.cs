@@ -19,15 +19,14 @@ namespace SBScript
         public static String sentencia = "";
         public static String retorno = "";
         public static String tipo = "";
-        public Boolean continuar = false;
-        public Boolean detener = false;
-        public Boolean retornar = false;
+        public static Boolean continuar = false;
+        public static Boolean detener = false;
+        public static Boolean retornar = false;
 
         public static String action(ParseTreeNode nodo)
         {
             String result = null;
             String variables = "";
-            //   Listas.nodoActual = nodo;
             switch (nodo.Term.Name.ToString())
             {
                 case "TIPO":
@@ -50,7 +49,7 @@ namespace SBScript
                             String ambito = Variables.pilaAmbito.Peek().ToString();
                             for (int i = 0; i < var.Length - 1; i++)
                             {
-                                Variables.crearVariable(tipo, var[i], "", ambito);
+                                Variables.declararVariable(tipo, var[i], "", ambito);
                             }
                         }
                         else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
@@ -64,7 +63,7 @@ namespace SBScript
                             {
                                 for (int i = 0; i < var.Length - 1; i++)
                                 {
-                                    Variables.crearVariable(tipo, var[i], asig, ambito);
+                                    Variables.declararVariable(tipo, var[i], asig, ambito);
                                 }
                             }
                             else
@@ -151,7 +150,19 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 5)
                         {
-                            //result = action(node.ChildNodes[0]);
+                            Listas.expresion = "";
+                    //        action(nodo.ChildNodes[2]);
+                            String exp = Listas.expresion;
+                            ParseTreeNode resultado = Analizador.analizarEXP("factorial(5)>=(60+5)*num1");
+                            Listas.expresion = "";
+                            if (resultado != null)
+                            {
+                                MessageBox.Show("El arbol fue construido correctamente");
+                            }
+                            else
+                            {
+                                MessageBox.Show("ERROR: Deberia de revisar la cadena de entrada");
+                            }
                         }
                         break;
                     }
@@ -164,7 +175,8 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 2)
                         {
                             action(nodo.ChildNodes[0]);
-                            action(nodo.ChildNodes[1]);
+                            if (detener == false && continuar == false && retornar == false)
+                                action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
@@ -172,11 +184,16 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
-                            result = action(nodo.ChildNodes[0]);
+                            if (detener == false && continuar == false && retornar == false)
+                                result = action(nodo.ChildNodes[0]);
                         }
                         else if (nodo.ChildNodes.Count == 2)
                         {
-                            //action(node.ChildNodes[0]);
+                            if (nodo.ChildNodes[0].Term.Name.ToString() == "Detener")
+                                detener = true;
+                            else
+                                continuar = true;
+
                         }
                         break;
                     }
@@ -184,18 +201,13 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 2)
                         {
-                            //if (nodo.ChildNodes[1].Term.Name.ToString() == "OP")
-                            //{
-                            retorno = action(nodo.ChildNodes[1]);
-                            //}
-                            //else
-                            //{
-                            //retorno solo
-                            //}
+                            retorno = "";
+                            retornar = true;
                         }
                         else if (nodo.ChildNodes.Count == 3)
                         {
                             retorno = action(nodo.ChildNodes[1]);
+                            retornar = true;
                         }
                         break;
                     }
@@ -215,6 +227,7 @@ namespace SBScript
                         if (nodo.ChildNodes.Count == 3)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[0];
                             ParseTreeNode metodo = Metodo_Funcion.buscarMetodo(dato[0]);
                             if (metodo != null)
                             {
@@ -231,6 +244,7 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 4)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[0];
                             ParseTreeNode metodo = null;
                             if (nodo.ChildNodes[2].Term.Name.ToString() == "TipoPARAMETRO")
                             {
@@ -272,6 +286,7 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 5)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[0];
                             action(nodo.ChildNodes[2]);
                             ParseTreeNode metodo = Metodo_Funcion.buscarMetodo(dato[0]);
                             if (metodo != null)
@@ -403,6 +418,8 @@ namespace SBScript
                                 Variables.nivelAmbito += 1;
                                 while (w)
                                 {
+                                    detener = false;
+                                    continuar = false;
                                     action(nodo.ChildNodes[5]);
                                     condicion = action(nodo.ChildNodes[2]);
                                     if (condicion == "1" || condicion == "true")
@@ -416,7 +433,13 @@ namespace SBScript
                                     limite += 1;
                                     if (limite == 100)
                                         break;
+
+                                    if (detener == true)
+                                        w = false;
                                 }
+
+                                detener = false;
+                                continuar = false;
                                 Variables.eliminarAmbito();
                             }
                             else
@@ -430,8 +453,10 @@ namespace SBScript
                                 }
                                 Variables.pilaAmbito.Push("Else");
                                 Variables.nivelAmbito += 1;
-                                while (!w)
+                                while (!w) //falso
                                 {
+                                    detener = false;
+                                    continuar = false;
                                     action(nodo.ChildNodes[5]);
                                     condicion = action(nodo.ChildNodes[2]);
                                     if (condicion == "1" || condicion == "true")
@@ -445,7 +470,12 @@ namespace SBScript
                                     limit += 1;
                                     if (limit == 100)
                                         break;
+                                    if (detener == true)
+                                        w = true;
                                 }
+
+                                detener = false;
+                                continuar = false;
                                 Variables.eliminarAmbito();
                             }
                         }
@@ -454,6 +484,8 @@ namespace SBScript
                 case "SWITCH":
                     {
                         boolean = false;
+                        detener = false;
+                        continuar = false;
                         if (nodo.ChildNodes.Count == 5)
                         {
                             sentencia = action(nodo.ChildNodes[2]);
@@ -470,6 +502,8 @@ namespace SBScript
                                 tipo = "String";
                             }
                             action(nodo.ChildNodes[4]);
+                            detener = false;
+                            continuar = false;
                         }
                         else if (nodo.ChildNodes.Count == 6)
                         {
@@ -479,7 +513,10 @@ namespace SBScript
                             {
                                 action(nodo.ChildNodes[5]);
                             }
+                            detener = false;
+                            continuar = false;
                         }
+
                         break;
                     }
                 case "CASE":
@@ -546,6 +583,8 @@ namespace SBScript
                             int limite = 0;
                             while (f)
                             {
+                                detener = false;
+                                continuar = false;
                                 action(nodo.ChildNodes[12]); //accion
                                 //
                                 if (nodo.ChildNodes[9].Term.Name.ToString() == "++")
@@ -569,12 +608,17 @@ namespace SBScript
                                 limite += 1;
                                 if (limite == 100)
                                     break;
+                                if (detener == true)
+                                    f = false;
                             }
+                            detener = false;
+                            continuar = false;
+
                             Variables.eliminarAmbito();
                         }
                         break;
                     }
-                case "OP":
+                case "EXPRESION":
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
@@ -631,16 +675,19 @@ namespace SBScript
                     {
                         PrimerRecorrido.concatenar = true;
                         String cadena = dato[0].Substring(0, dato[0].Length - 1);
+                        Listas.expresion += cadena;
                         return cadena;
                     }
                     else if (dato[1] == "numero)")
                     {
                         String n = Listas.quitarEspaciosFinal(dato[0]);
                         PrimerRecorrido.concatenar = false;
+                        Listas.expresion += n;
                         return n;
                     }
                     else if (dato[1] == "id)")
                     {
+                        Listas.expresion += dato[0];
                         Variable v = Variables.obtenerVariable(dato[0]);
                         if (v != null)
                         {
@@ -661,6 +708,7 @@ namespace SBScript
                     }
                     else if (dato[1] == "Keyword)")
                     {
+                        Listas.expresion += dato[0];
                         boolean = true;
                         PrimerRecorrido.concatenar = false;
                         if (dato[0] == "true " || dato[0] == "true")
@@ -674,7 +722,9 @@ namespace SBScript
                     }
                     else if (dato[0] == "LLAMADA")
                     {
+                        Listas.expresion += dato[0];
                         String r = action(root.ChildNodes[0]);
+                        retornar = false;
                         return r;
                     }
                     else
@@ -710,6 +760,7 @@ namespace SBScript
                     String E2 = "";
                     Double var1, var2;
                     String s = root.ChildNodes.ElementAt(1).ToString().Substring(0, 2);
+                    Listas.expresion += s;
                     switch (s)
                     {
 
@@ -718,6 +769,7 @@ namespace SBScript
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             Boolean c1 = PrimerRecorrido.concatenar;
                             Boolean b1 = boolean;
+                            boolean = false;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             Boolean c2 = PrimerRecorrido.concatenar;
                             Boolean b2 = boolean;
@@ -725,26 +777,42 @@ namespace SBScript
                             {
                                 if (c1 == true || c2 == true)
                                 {
-                                    resultado = E1 + E2;
-                                    PrimerRecorrido.concatenar = true;
-                                    return resultado;
+                                    if (E1 == "" || E2 == "")
+                                    {
+                                        Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                        return "";
+                                    }
+                                    else
+                                    {
+                                        resultado = E1 + E2;
+                                        PrimerRecorrido.concatenar = true;
+                                        return resultado;
+                                    }
                                 }
                                 else
                                 {
-                                    try
+                                    if (E1 == "" || E2 == "")
                                     {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        Double r = v1 + v2;
-                                        resultado = r.ToString();
-                                        PrimerRecorrido.concatenar = false;
-                                        return resultado;
-
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
+                                        Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                         return "";
+                                    }
+                                    else
+                                    {
+                                        try
+                                        {
+                                            Double v1 = Convert.ToDouble(E1);
+                                            Double v2 = Convert.ToDouble(E2);
+                                            Double r = v1 + v2;
+                                            resultado = r.ToString();
+                                            PrimerRecorrido.concatenar = false;
+                                            return resultado;
+
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            MessageBox.Show("E");
+                                            return "";
+                                        }
                                     }
                                 }
                             }
@@ -833,7 +901,7 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
+                                    PrimerRecorrido.concatenar = false;
                                     if (Listas.compararCadenas(E1, E2))
                                     {
                                         return "1";
@@ -875,7 +943,7 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
+                                    PrimerRecorrido.concatenar = false;
                                     if (Listas.compararCadenas(E1, E2))
                                     {
                                         return "0";
@@ -916,7 +984,7 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
+                                    PrimerRecorrido.concatenar = false;
                                     if (Listas.compararCadenas(E1, E2))
                                     {
                                         return "1";
@@ -957,12 +1025,12 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
+                                    PrimerRecorrido.concatenar = false;
+                                    if (Listas.compararCadenasMenorIgual(E1, E2))
                                     {
-                                        return "0";
+                                        return "1";
                                     }
-                                    return "1";
+                                    return "0";
                                 }
                                 else
                                 {
@@ -998,12 +1066,12 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
+                                    PrimerRecorrido.concatenar = false;
+                                    if (Listas.compararCadenasDiferente(E1, E2))
                                     {
-                                        return "1";
+                                        return "0";
                                     }
-                                    return "0";
+                                    return "1";
                                 }
                                 else
                                 {
@@ -1039,12 +1107,12 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
+                                    PrimerRecorrido.concatenar = false;
+                                    if (Listas.compararCadenasDiferente(E1, E2))
                                     {
-                                        return "false";
+                                        return "1";
                                     }
-                                    return "true";
+                                    return "0";
                                 }
                                 else
                                 {
@@ -1080,7 +1148,7 @@ namespace SBScript
                                 c2 = PrimerRecorrido.concatenar;
                                 if (c1 == true || c2 == true)
                                 {
-                                    PrimerRecorrido.concatenar = true;
+                                    PrimerRecorrido.concatenar = false;
                                     if (Listas.semejarCadenas(E1.ToLower(), E2.ToLower()))
                                     {
                                         return "1";

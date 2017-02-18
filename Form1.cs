@@ -184,6 +184,9 @@ namespace SBScript
                 {
                     Variables.pilaAmbito.Push("Principal");
                     Variables.nivelAmbito += 1;
+                    SegundoRecorrido.continuar = false;
+                    SegundoRecorrido.detener = false;
+                    SegundoRecorrido.retornar = false;
                     SegundoRecorrido.action(nodoPrincipal);
 
                 }
@@ -248,13 +251,6 @@ namespace SBScript
 
         }
 
-        private void nombre()
-        {
-            String m = tabControl1.TabPages[tabControl1.SelectedIndex].AccessibilityObject.Name;
-            String n = tabControl1.SelectedTab.AccessibilityObject.Name.ToString();
-            nombreTab = n;
-          
-        }
         public void incluirArchivo(String archivo)
         {
             int i = 0;

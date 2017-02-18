@@ -16,11 +16,12 @@ namespace SBScript
         public static Stack archivo = new Stack();
         public static ParseTreeNode nodoActual = null;
         public static Stack incluir = new Stack();
-
+        public static String expresion = "";
         public static Boolean compararCadenas(String cadena1, String cadena2)
         {
             // igual_mayor = true;
             int aumenta = cadena2.Length;
+
             if (cadena1.Length <= cadena2.Length)
             {
                 aumenta = cadena1.Length;
@@ -51,6 +52,72 @@ namespace SBScript
             {
                 return false;
             }
+        }
+
+        public static Boolean compararCadenasMenorIgual(String cadena1, String cadena2)
+        {
+            // menor_difente = true;
+
+            int aumenta = cadena2.Length;
+            if (cadena1.Length < cadena2.Length)
+            {
+                return true;
+            }else if (cadena1.Length > cadena2.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < aumenta; i++)
+            {
+                string c1 = cadena1.Substring(i, 1);
+                int ascii1 = Encoding.ASCII.GetBytes(c1)[0];
+                string c2 = cadena2.Substring(i, 1);
+                int ascii2 = Encoding.ASCII.GetBytes(c2)[0];
+
+                if (ascii1 > ascii2)
+                {
+                    return false;
+                }
+                else if (ascii1 < ascii2)
+                {
+                    return true;
+                }
+
+            }
+
+            if (cadena1.Length >= cadena2.Length)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static Boolean compararCadenasDiferente(String cadena1, String cadena2)
+        {
+            // menor_difente = true;
+
+            int aumenta = cadena2.Length;
+            if (cadena1.Length < cadena2.Length || cadena1.Length > cadena2.Length)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < aumenta; i++)
+            {
+                string c1 = cadena1.Substring(i, 1);
+                int ascii1 = Encoding.ASCII.GetBytes(c1)[0];
+                string c2 = cadena2.Substring(i, 1);
+                int ascii2 = Encoding.ASCII.GetBytes(c2)[0];
+
+                if (ascii1 > ascii2|| ascii1 < ascii2)
+                {
+                    return true;
+                }
+
+            }
+            return false;
         }
 
         public static Boolean semejarCadenas(String cadena1, String cadena2)

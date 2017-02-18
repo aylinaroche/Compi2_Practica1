@@ -20,7 +20,7 @@ namespace SBScript
             for (int i = 0; i < listaMetodoFuncion.Count; i++)
             {
                 MF m = (MF)listaMetodoFuncion[i];
-                if (m.tipo.Equals(t) && m.nombre.Equals(n) && p.Count == m.parametro.Count)
+                if (m.nombre.Equals(n) && p.Count == m.parametro.Count)
                 {
                     int cantidad = 0;
                     for (int j = 0; j < p.Count; j++)

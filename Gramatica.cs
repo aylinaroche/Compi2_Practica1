@@ -17,17 +17,17 @@ namespace SBScript
             RegexBasedTerminal decim = new RegexBasedTerminal("decimal", "[0-9]* . [0-9]*");
             NumberLiteral numero = new NumberLiteral("numero");
             IdentifierTerminal id = new IdentifierTerminal("id");
-
-            CommentTerminal comLine = new CommentTerminal("comLine", "#", "\n", "\r\n");
-            CommentTerminal com = new CommentTerminal("com", "/n", "/r");
             CommentTerminal comMulti = new CommentTerminal("comMulti", "#*", "*#");
             CommentTerminal comM = new CommentTerminal("comM", "#*", "*#");
+            CommentTerminal comLine = new CommentTerminal("comLine", "#", "\n", "\r\n");
+            CommentTerminal com = new CommentTerminal("com", "/n", "/r");
             StringLiteral cadena = new StringLiteral("cadena", "\"", StringOptions.IsTemplate);
 
-            base.NonGrammarTerminals.Add(com);
-            base.NonGrammarTerminals.Add(comLine);
             base.NonGrammarTerminals.Add(comMulti);
             base.NonGrammarTerminals.Add(comM);
+            base.NonGrammarTerminals.Add(com);
+            base.NonGrammarTerminals.Add(comLine);
+
             #endregion
 
             #region Terminales
@@ -104,7 +104,7 @@ namespace SBScript
                 OpLOGICO = new NonTerminal("OpLOGICO"),
                 OpARITMETICO = new NonTerminal("OpARITMETICO"),
                 OpRELACIONAL = new NonTerminal("OpRELACIONAL"),
-                OP = new NonTerminal("OP"),
+                EXPRESION = new NonTerminal("EXPRESION"),
                 CICLO = new NonTerminal("CICLO"),
                 SI = new NonTerminal("SI"),
                 SWITCH = new NonTerminal("SWITCH"),
@@ -152,23 +152,23 @@ namespace SBScript
                  | tipoBoolean;
 
             DECLARACION.Rule = TIPO + VAR + puntoComa
-                | TIPO + VAR + igual + OP + puntoComa
-                | TIPO + VAR + igual + OP;
+                | TIPO + VAR + igual + EXPRESION + puntoComa
+                | TIPO + VAR + igual + EXPRESION;
 
             VAR.Rule = VAR + coma + id
                 | id;
 
-            ASIGNACION.Rule = id + igual + OP + puntoComa
-                | id + igual + OP;
+            ASIGNACION.Rule = id + igual + EXPRESION + puntoComa
+                | id + igual + EXPRESION;
 
             MOSTRAR.Rule = mostrar + parentesisA + DatosMOSTRAR + parentesisC + puntoComa;
 
-            DatosMOSTRAR.Rule = DatosMOSTRAR + coma + OP
-                | OP;
+            DatosMOSTRAR.Rule = DatosMOSTRAR + coma + EXPRESION
+                | EXPRESION;
 
             DibujarAST.Rule = dibujarAST + parentesisA + id + parentesisC + puntoComa;
 
-            DibujarEXP.Rule = dibujarEXP + parentesisA + OP + parentesisC + puntoComa;
+            DibujarEXP.Rule = dibujarEXP + parentesisA + EXPRESION + parentesisC + puntoComa;
 
             INSTRUCCIONES.Rule = INSTRUCCIONES + INSTRUCCION
                 | INSTRUCCION;
@@ -191,7 +191,7 @@ namespace SBScript
                 | continuar + puntoComa;
 
             INSTRUCCION.ErrorRule = SyntaxError + ";"
-                |SyntaxError + "}";
+                | SyntaxError + "}";
 
             METODO.Rule = tipoVoid + id + parentesisA + varPARAMETRO + parentesisC + llaveA + INSTRUCCIONES + llaveC
                 | tipoVoid + id + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC
@@ -205,9 +205,9 @@ namespace SBScript
             varPARAMETRO.Rule = varPARAMETRO + coma + TIPO + id
                   | TIPO + id;
 
-            RETORNAR.Rule = retornar + OP + puntoComa
-                | retornar + OP;
-                //| retornar + puntoComa;
+            RETORNAR.Rule = retornar + EXPRESION + puntoComa
+                | retornar + EXPRESION;
+            //| retornar + puntoComa;
 
             MAIN.Rule = principal + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
@@ -216,31 +216,31 @@ namespace SBScript
                      | id + parentesisA + parentesisC + puntoComa
                      | id + parentesisA + parentesisC;
 
-            TipoPARAMETRO.Rule = TipoPARAMETRO + coma + OP
-                        | OP;
+            TipoPARAMETRO.Rule = TipoPARAMETRO + coma + EXPRESION
+                        | EXPRESION;
 
-            SI.Rule = si + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                  | si + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC + ELSE;
+            SI.Rule = si + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                  | si + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC + ELSE;
 
             ELSE.Rule = sino + INSTRUCCIONES
                 | sino + llaveA + INSTRUCCIONES + llaveC;
 
-            CICLO.Rule = hasta + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                |mientras + parentesisA + OP + parentesisC + llaveA + INSTRUCCIONES + llaveC;
+            CICLO.Rule = hasta + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                | mientras + parentesisA + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
-            SWITCH.Rule = selecciona + parentesisA + OP + parentesisC + CASE
-                       | selecciona + parentesisA + OP + parentesisC + CASE + DEFAULT
-                       | selecciona + parentesisA + OP + parentesisC + DEFAULT;
+            SWITCH.Rule = selecciona + parentesisA + EXPRESION + parentesisC + CASE
+                       | selecciona + parentesisA + EXPRESION + parentesisC + CASE + DEFAULT
+                       | selecciona + parentesisA + EXPRESION + parentesisC + DEFAULT;
 
-            CASE.Rule = CASE + OP + dosPuntos + llaveA + INSTRUCCIONES + llaveC
-                | OP + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
+            CASE.Rule = CASE + EXPRESION + dosPuntos + llaveA + INSTRUCCIONES + llaveC
+                | EXPRESION + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
             DEFAULT.Rule = defecto + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
-            FOR.Rule = para + parentesisA + tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + aumentar + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                | para + parentesisA + tipoNumber + id + igual + OP + puntoComa + OP + puntoComa + disminuir + parentesisC + llaveA + INSTRUCCIONES + llaveC;
+            FOR.Rule = para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + aumentar + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                | para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + disminuir + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
-            OP.Rule = E;
+            EXPRESION.Rule = E;
 
             L.Rule = parentesisA + L + parentesisC
                     | L + or + L
@@ -266,7 +266,7 @@ namespace SBScript
                 | E + and + E
                 | not + E
                 | E + aumentar
-                | E +disminuir
+                | E + disminuir
                 | aumentar
                 | disminuir
                 | numero
@@ -275,7 +275,7 @@ namespace SBScript
                 | falso
                 | verdadero
                 | LLAMADA
-                | menos + parentesisA + E + parentesisC
+               // | menos + parentesisA + E + parentesisC
                 | menos + E;
 
             #endregion
@@ -293,11 +293,11 @@ namespace SBScript
             // y se agrega el operador entre "".
 
             this.RegisterOperators(1, Associativity.Left, "==");
-             this.RegisterOperators(2, Associativity.Left, "+", "-");
-            this.RegisterOperators(3, Associativity.Left, "*", "/","%");
+            this.RegisterOperators(2, Associativity.Left, "+", "-");
+            this.RegisterOperators(3, Associativity.Left, "*", "/", "%");
             this.RegisterOperators(4, Associativity.Right, "^");
             //this.RegisterOperators(4, Associativity.Neutral, "- ");
-            this.RegisterOperators(5, Associativity.Left, "!=","<",">","<=",">=","~");
+            this.RegisterOperators(5, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(6, Associativity.Left, "||");
             this.RegisterOperators(7, Associativity.Left, "!&");
             this.RegisterOperators(8, Associativity.Left, "&&");

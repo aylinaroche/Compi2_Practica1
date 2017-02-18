@@ -113,7 +113,7 @@ namespace SBScript
                             String ambito = Variables.pilaAmbito.Peek().ToString();
                             for (int i = 0; i < var.Length - 1; i++)
                             {
-                                Variables.crearVariable(tipo, var[i], "", ambito);
+                                Variables.declararVariable(tipo, var[i], "", ambito);
                             }
                         }
                         else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
@@ -127,7 +127,7 @@ namespace SBScript
                             {
                                 for (int i = 0; i < var.Length - 1; i++)
                                 {
-                                    Variables.crearVariable(tipo, var[i], asig, ambito);
+                                    Variables.declararVariable(tipo, var[i], asig, ambito);
                                 }
                             }
                             else
@@ -214,16 +214,19 @@ namespace SBScript
                         if (nodo.ChildNodes.Count == 6)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[1];
                             Metodo_Funcion.agregarMF("Void", dato[0], "", null, lista);
                         }
                         else if (nodo.ChildNodes.Count == 7)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[1];
                             Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[5], lista);
                         }
                         else if (nodo.ChildNodes.Count == 8)
                         {
                             action(nodo.ChildNodes[3]);
+                            Listas.nodoActual = nodo.ChildNodes[1];
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
                             Metodo_Funcion.agregarMF("Void", dato[0], "", nodo.ChildNodes[6], Metodo_Funcion.parametros);
                         }
@@ -237,12 +240,14 @@ namespace SBScript
                         {
                             String tipo = action(nodo.ChildNodes[0]);
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[1];
                             Metodo_Funcion.agregarMF(tipo, dato[0], "", null, lista);
                         }
                         else if (nodo.ChildNodes.Count == 7)
                         {
                             String tipo = action(nodo.ChildNodes[0]);
                             String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split(' '));
+                            Listas.nodoActual = nodo.ChildNodes[1];
                             if (nodo.ChildNodes[3].Term.Name.ToString() == "varPARAMETRO")
                             {
                                 action(nodo.ChildNodes[3]);
@@ -296,6 +301,7 @@ namespace SBScript
                         ArrayList vacio = new ArrayList();
                         if (nodo.ChildNodes.Count == 6)
                         {
+                            Listas.nodoActual = nodo.ChildNodes[0];
                             if (Listas.incluir.Count == 0)
                             {
                                 Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], vacio);
@@ -407,7 +413,7 @@ namespace SBScript
                         }
                         break;
                     }
-                case "OP":
+                case "EXPRESION":
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {

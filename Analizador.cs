@@ -41,7 +41,7 @@ namespace SBScript
                     tipo = "Error Sintactico";
                     mensaje = mensaje.Replace("Syntax error, expected:", "Se esperaba:");
                 }
-                Reporte.agregarError(log.Message.ToString(),tipo, log.Location.Line, log.Location.Column);
+                Reporte.agregarError(mensaje,tipo, log.Location.Line, log.Location.Column);
             }
             if (raiz == null)
             {
@@ -96,6 +96,47 @@ namespace SBScript
 
 
         }
+
+        public static ParseTreeNode analizarEXP(String cadena)
+        {
+            GramaticaEXP gramatica = new GramaticaEXP();
+
+            LanguageData lenguaje = new LanguageData(gramatica);
+            Parser parser = new Parser(lenguaje);
+            ParseTree arbol = parser.Parse(cadena);
+            ParseTreeNode raiz = arbol.Root;
+            if (raiz == null)
+            {
+                return raiz;
+            }
+            else
+            {
+                generarArbolEXP(raiz);
+                return raiz;
+            }
+        }
+
+        private static void generarArbolEXP(ParseTreeNode raiz)
+        {
+            String grafodot = DIBUJAR.getDotEXP(raiz);
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/arbolEXP.dot"))
+            {
+                file.WriteLine(grafodot);
+            }
+            ProcessStartInfo startInfo = new ProcessStartInfo("C:\\Program Files (x86)\\Graphviz 2.28\\bin\\dot.exe");
+            startInfo.Arguments = "dot -Tpng \"C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/arbolEXP.dot\" -o \"C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/arbolEXP.png\"";
+            try
+            {
+                Process.Start(startInfo);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+
+
+        }
+
     }
 }
 
