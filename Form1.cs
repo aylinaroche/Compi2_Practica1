@@ -60,7 +60,7 @@ namespace SBScript
         private void btnAbrir_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
- openFileDialog1.InitialDirectory = "C:\\Users\\Aylin\\Documents";
+            openFileDialog1.InitialDirectory = "C:\\Users\\Aylin\\Documents";
             openFileDialog1.Filter = "txt files (*.txt)|*.txt| SBS files (*.*)|*.sbs";
             openFileDialog1.FilterIndex = 2;
             openFileDialog1.RestoreDirectory = true;
@@ -73,7 +73,7 @@ namespace SBScript
                 String[] dato = openFileDialog1.FileName.Split('\\');
                 nombre = dato[dato.Length - 1];
                 ruta = openFileDialog1.FileName;
-                for(int i = 0; i < dato.Length - 1; i++)
+                for (int i = 0; i < dato.Length - 1; i++)
                 {
                     carpeta += dato[i] + "\\";
                 }
@@ -176,9 +176,9 @@ namespace SBScript
 
             if (resultado != null)
             {
-                
                 MessageBox.Show("El arbol fue construido correctamente");
                 PrimerRecorrido.action(resultado);
+                RecorridoGlobal.action(resultado);
                 ParseTreeNode nodoPrincipal = Metodo_Funcion.buscarMetodo("MAIN");
                 if (nodoPrincipal != null)
                 {
@@ -248,7 +248,14 @@ namespace SBScript
 
         private void btnAlbum_Click(object sender, EventArgs e)
         {
-
+            if (Listas.ruta == "")
+            {
+                System.Diagnostics.Process.Start(@"C:\\Users\\Aylin\\Documents\\Visual Studio 2015\\Projects\\SBScript\\Reportes");
+            }
+            else
+            {
+                System.Diagnostics.Process.Start(Listas.ruta);
+            }
         }
 
         public void incluirArchivo(String archivo)
@@ -257,10 +264,10 @@ namespace SBScript
             String carpeta = "";
             if (listaRuta.Count == 0)
             {
-                Reporte.agregarMensajeError("No se ha podido incluir el archivo ya que no esta guardado","Error Semantico",Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                Reporte.agregarMensajeError("No se ha podido incluir el archivo ya que no esta guardado", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                 return;
             }
-          
+
             for (i = 0; i < listaRuta.Count; i++) //Si la ruta esta vacia
             {
                 Pestania p = (Pestania)listaRuta[i];
@@ -269,14 +276,15 @@ namespace SBScript
                     carpeta = p.carpeta;
                 }
             }
-            
+
             if (carpeta == "")
             {
                 Reporte.agregarMensajeError("No se ha podido incluir el archivo ya que no esta guardado", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                 return;
-            }else
+            }
+            else
             {
-                String ruta =carpeta+archivo;
+                String ruta = carpeta + archivo;
                 String texto = "";
                 try
                 {
@@ -290,7 +298,7 @@ namespace SBScript
                     p.ruta = ruta;
                     p.carpeta = carpeta;
                     listaRuta.Add(p);
-                    
+
                     MessageBox.Show(archivo);
                     txtConsola.Text += "\n* * * * * * * * " + archivo + " * * * * * * * ";
                     ParseTreeNode resultado = Analizador.analizar(texto);

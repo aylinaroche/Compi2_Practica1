@@ -108,24 +108,23 @@ namespace SBScript
                 | menos + E;
 
             #endregion
-            MarkTransient(TipoPARAMETRO);
-            MarkTransient(E);
+              MarkTransient(TipoPARAMETRO);
+              MarkPunctuation(parentesisA,parentesisC);
            
-           // MarkTransient(LLAMADA);
+           //MarkTransient(LLAMADA);
 
             #region Preferencias
-            this.Root = ENTRADA;
-            this.RegisterOperators(1, Associativity.Left, "==");
+            this.Root = E;
+            this.RegisterOperators(1, Associativity.Left, "==", "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(2, Associativity.Left, "+", "-");
             this.RegisterOperators(3, Associativity.Left, "*", "/", "%");
             this.RegisterOperators(4, Associativity.Right, "^");
             //this.RegisterOperators(4, Associativity.Neutral, "- ");
-            this.RegisterOperators(5, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
+            //            this.RegisterOperators(1, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(6, Associativity.Left, "||");
             this.RegisterOperators(7, Associativity.Left, "!&");
             this.RegisterOperators(8, Associativity.Left, "&&");
             this.RegisterOperators(9, Associativity.Left, "!");
-            // this.RegisterOperators(6, Associativity.Left, "==", "!=");
             #endregion
         }
     }

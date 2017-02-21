@@ -73,6 +73,7 @@ namespace SBScript
         {
             Boolean existe = true;
             ParseTreeNode nodo = null;
+            Boolean aux = false;
             for (int i = 0; i < listaMetodoFuncion.Count; i++)
             {
                 MF mf = (MF)listaMetodoFuncion[i];
@@ -82,11 +83,26 @@ namespace SBScript
                     {
                         Parametro p1 = (Parametro)parametrosTemp[j];
                         Parametro p2 = (Parametro)mf.parametro[j];
-                        if (p1.tipo != p2.tipo)
+                        if(p1.tipo=="Bool"&&p2.tipo=="Number"|| p2.tipo == "Bool" && p1.tipo == "Number")
                         {
-                            j = parametrosTemp.Count + 1;
-                            existe = false;
+                            if (p1.valor == "1"||p1.valor=="0")
+                            {
+                                //Puede ser
+                                aux = true;
+                            }else
+                            {
+                                existe = false;
+                            }
                         }
+                        if (aux == false)
+                        {
+                            if (p1.tipo != p2.tipo)
+                            {
+                                j = parametrosTemp.Count + 1;
+                                existe = false;
+                            }
+                        }
+                        aux = false;
                     }
                     if (existe == true)
                     {
@@ -132,6 +148,33 @@ namespace SBScript
 
             }
         }
+
+        public static ArrayList obtenerMetodos(String nombre)
+        {
+            String nombreCompleto = "";
+            ArrayList lista = new ArrayList();
+            for (int i = 0; i < listaMetodoFuncion.Count; i++)
+            {
+                MF mf = (MF)listaMetodoFuncion[i];
+                if (mf.nombre == nombre)
+                {
+                    for (int j = 0; j < mf.parametro.Count; j++)
+                    {
+                        Parametro p1 = (Parametro)mf.parametro[j];
+                        nombreCompleto += "_" + p1.tipo;
+                    }
+                    ObjetoMetodo objeto = new ObjetoMetodo();
+                    objeto.nombre = nombre + nombreCompleto;
+                    objeto.nodo = mf.nodo;
+                    lista.Add(objeto);
+                    nombreCompleto = "";
+                }
+            }
+            return lista;
+        }
+
+
+
     }
 
 
@@ -152,4 +195,9 @@ namespace SBScript
         public String valor;
     }
 
+    class ObjetoMetodo
+    {
+        public ParseTreeNode nodo;
+        public String nombre;
+    }
 }

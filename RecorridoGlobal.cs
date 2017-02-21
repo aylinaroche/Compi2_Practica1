@@ -3,21 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Irony.Parsing;
-using System.Diagnostics;
-using System.Collections;
-using System.IO;
-using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace SBScript
 {
-    class SegundoRecorrido
+    class RecorridoGlobal
     {
         public static int contador = 0;
         public static Boolean boolean = false;
-        public static String sentencia = "";
-        public static String retorno = "";
         public static String tipo = "";
         public static Boolean continuar = false;
         public static Boolean detener = false;
@@ -29,13 +23,48 @@ namespace SBScript
             String variables = "";
             switch (nodo.Term.Name.ToString())
             {
+                case "INICIO":
+                    {
+                        if (nodo.ChildNodes.Count == 1)
+                        {
+                            action(nodo.ChildNodes[0]);
+                        }
+                        else if (nodo.ChildNodes.Count == 2)
+                        {
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[1]);
+                        }
+                        break;
+                    }
+                case "ENTRADA":
+                    {
+                        if (nodo.ChildNodes.Count == 1)
+                        {
+                            Variables.pilaAmbito.Push("Global");
+                            Variables.nivelAmbito = 0;
+                            action(nodo.ChildNodes[0]);
+                        }
+                        break;
+                    }
+                case "ENCABEZADO":
+                    {
+                        if (nodo.ChildNodes.Count == 1)
+                        {
+                            action(nodo.ChildNodes[0]);
+                        }
+                        else if (nodo.ChildNodes.Count == 2)
+                        {
+                            action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[1]);
+                        }
+                        break;
+                    }
                 case "TIPO":
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
                             String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
                             result = numero[0];
-
                         }
                         break;
                     }
@@ -68,7 +97,7 @@ namespace SBScript
                             }
                             else
                             {
-                                Reporte.agregarMensajeError("No puede declarar.", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                Reporte.agregarMensajeError("Error al declarar la expresion en una variable global", "Error Semantico", 0, 0);
                             }
                         }
                         break;
@@ -100,98 +129,16 @@ namespace SBScript
                         }
                         break;
                     }
-                case "MOSTRAR":
-                    {
-                        contador = 0;
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            result = action(nodo.ChildNodes[2]);
-                            Listas.MensajeConsola.Add(">> " + result + ".\n");
-                        }
-                        break;
-                    }
-                case "DatosMOSTRAR":
-                    {
-                        if (nodo.ChildNodes.Count == 1)
-                        {
-                            result = action(nodo.ChildNodes[0]);
-                        }
-                        else if (nodo.ChildNodes.Count == 3)
-                        {
-                            String cadena = action(nodo.ChildNodes[0]);
-                            String indice = "{" + contador + "}";
-                            String expr = action(nodo.ChildNodes[2]);
-                            try
-                            {
-                                cadena = cadena.Replace(indice, expr);
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show("EE");
-                            }
-                            result = cadena;
-                            contador += 1;
-                        }
-
-                        break;
-                    }
-
-                case "DibujarAST":
-                    {
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            String[] dato = (nodo.ChildNodes.ElementAt(2).ToString().Split(' '));
-                            ArrayList lista = Metodo_Funcion.obtenerMetodos(dato[0]);
-                            for (int i = 0; i < lista.Count; i++)
-                            {
-                                ObjetoMetodo obj = (ObjetoMetodo)lista[i];
-
-                                String cadena = Listas.cadenaMetodo(obj.nodo);
-                                //MessageBox.Show(cadena);
-                                GramaticaAST gramatica = new GramaticaAST();
-                                LanguageData lenguaje = new LanguageData(gramatica);
-                                Parser parser = new Parser(lenguaje);
-                                ParseTree arbol = parser.Parse(cadena);
-                                ParseTreeNode raiz = arbol.Root;
-                                Analizador.generarAST(raiz, obj.nombre);
-
-                            }
-                            if (lista.Count == 0)
-                            {
-                                Reporte.agregarMensajeError("No existe el metodo '" + dato[0] + "'", "Error General", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                            }
-
-                            Listas.cadena = "";
-                        }
-                        break;
-                    }
-                case "DibujarEXP":
-                    {
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            String nombre = "EXP_" + Listas.contadorEXP;
-                            String cadena = Listas.cadenaMetodo(nodo.ChildNodes[2]);
-                            //MessageBox.Show(cadena);
-                            GramaticaEXP gramatica = new GramaticaEXP();
-                            LanguageData lenguaje = new LanguageData(gramatica);
-                            Parser parser = new Parser(lenguaje);
-                            ParseTree arbol = parser.Parse(cadena);
-                            ParseTreeNode raiz = arbol.Root;
-                            Analizador.generarEXP(raiz, nombre);
-                        }
-                        break;
-                    }
                 case "INSTRUCCIONES":
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
-                            result = action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
                         else if (nodo.ChildNodes.Count == 2)
                         {
                             action(nodo.ChildNodes[0]);
-                            if (detener == false && continuar == false && retornar == false)
-                                action(nodo.ChildNodes[1]);
+                            action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
@@ -199,71 +146,23 @@ namespace SBScript
                     {
                         if (nodo.ChildNodes.Count == 1)
                         {
-                            if (detener == false && continuar == false && retornar == false)
-                                result = action(nodo.ChildNodes[0]);
+                            action(nodo.ChildNodes[0]);
                         }
                         else if (nodo.ChildNodes.Count == 2)
                         {
-                            String ambito = Variables.pilaAmbito.Peek().ToString();
-                            if (nodo.ChildNodes[0].Term.Name.ToString() == "Detener")
-                            {
-                                if (ambito == "For" || ambito == "Mientras" || ambito == "Hasta" || ambito == "Selecciona")
-                                {
-                                    detener = true;
-                                }
-                                else
-                                {
-                                    Reporte.agregarMensajeError("No se puede agregar un 'Detener' en la sentencia", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                }
-
-                            }
-                            else
-                            {
-                                if (ambito == "For" || ambito == "Mientras" || ambito == "Hasta")
-                                {
-                                    continuar = true;
-                                }
-                                else
-                                {
-                                    Reporte.agregarMensajeError("No se puede agregar un 'Detener' en la sentencia", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                }
-                            }
-
+                            //action(node.ChildNodes[0]);
                         }
                         break;
                     }
                 case "RETORNAR":
                     {
-                        if (nodo.ChildNodes.Count == 2)
+                        // MessageBox.Show("TIPO");
+                        if (nodo.ChildNodes.Count == 3)
                         {
-                            if (nodo.ChildNodes[1].Term.Name.ToString() == "EXPRESION")
-                            {
-                                retorno = action(nodo.ChildNodes[1]);
-                            }
-                            else
-                            {
-                                retorno = "";
-                            }
-
-                            retornar = true;
-                        }
-                        else if (nodo.ChildNodes.Count == 3)
-                        {
-                            retorno = action(nodo.ChildNodes[1]);
-                            retornar = true;
+                            action(nodo.ChildNodes[1]);
                         }
                         break;
                     }
-                case "MAIN":
-                    {
-                        Metodo_Funcion.parametros.Clear();
-                        if (nodo.ChildNodes.Count == 6)
-                        {
-                            Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], null);
-                        }
-                        break;
-                    }
-
                 case "LLAMADA(":
                     {
                         Metodo_Funcion.parametrosTemp.Clear();
@@ -276,7 +175,7 @@ namespace SBScript
                             {
                                 Variables.pilaAmbito.Push(dato[0]);
                                 Variables.nivelAmbito += 1;
-                                action(metodo);
+                                SegundoRecorrido.action(metodo);
                                 Variables.eliminarAmbito();
                             }
                             else
@@ -298,7 +197,7 @@ namespace SBScript
                                     Variables.pilaAmbito.Push(dato[0]);
                                     Variables.nivelAmbito += 1;
                                     Metodo_Funcion.guardarParametro(dato[0]);
-                                    action(metodo);
+                                    SegundoRecorrido.action(metodo);
                                     Variables.eliminarAmbito();
                                 }
                                 else
@@ -315,7 +214,7 @@ namespace SBScript
                                     Variables.pilaAmbito.Push(dato[0]);
                                     Variables.nivelAmbito += 1;
                                     //  Metodo_Funcion.guardarParametro();
-                                    action(metodo);
+                                    SegundoRecorrido.action(metodo);
                                     Variables.eliminarAmbito();
                                 }
                                 else
@@ -330,14 +229,14 @@ namespace SBScript
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
                             Listas.nodoActual = nodo.ChildNodes[0];
-                            action(nodo.ChildNodes[2]);
+                            SegundoRecorrido.action(nodo.ChildNodes[2]);
                             ParseTreeNode metodo = Metodo_Funcion.buscarMetodo(dato[0]);
                             if (metodo != null)
                             {
                                 Variables.pilaAmbito.Push(dato[0]);
                                 Variables.nivelAmbito += 1;
                                 Metodo_Funcion.guardarParametro(dato[0]);
-                                action(metodo);
+                                SegundoRecorrido.action(metodo);
                                 Variables.eliminarAmbito();
                             }
                             else
@@ -347,8 +246,8 @@ namespace SBScript
 
                         }
                         Metodo_Funcion.parametrosTemp.Clear();
-                        result = retorno;
-                        retorno = "";
+                        result = SegundoRecorrido.retorno;
+                        SegundoRecorrido.retorno = "";
                         break;
                     }
                 case "TipoPARAMETRO":
@@ -399,268 +298,6 @@ namespace SBScript
                         }
                         break;
                     }
-                case "SI":
-                    {
-                        if (nodo.ChildNodes.Count == 7)
-                        {
-                            String restriccion = action(nodo.ChildNodes[2]);
-                            if (restriccion == "true" || restriccion == "1")
-                            {
-                                Variables.pilaAmbito.Push("Si");
-                                Variables.nivelAmbito += 1;
-                                action(nodo.ChildNodes[5]);
-                                Variables.eliminarAmbito();
-                            }
-                        }
-                        else if (nodo.ChildNodes.Count == 8)
-                        {
-                            String restriccion = action(nodo.ChildNodes[2]);
-                            if (restriccion == "true" || restriccion == "1")
-                            {
-                                Variables.pilaAmbito.Push("Si");
-                                Variables.nivelAmbito += 1;
-                                action(nodo.ChildNodes[5]);
-                                Variables.eliminarAmbito();
-                            }
-                            else
-                            {
-                                Variables.pilaAmbito.Push("Else");
-                                Variables.nivelAmbito += 1;
-                                action(nodo.ChildNodes[7]);
-                                Variables.eliminarAmbito();
-                            }
-                        }
-                        break;
-                    }
-                case "ELSE":
-                    {
-                        if (nodo.ChildNodes.Count == 2)
-                        {
-                            action(nodo.ChildNodes[1]);
-                        }
-                        else if (nodo.ChildNodes.Count == 4)
-                        {
-                            action(nodo.ChildNodes[2]);
-                        }
-                        break;
-                    }
-                case "CICLO":
-                    {
-                        int limite = 0;
-                        if (nodo.ChildNodes.Count == 7)
-                        {
-                            if (nodo.ChildNodes[0].Term.Name.ToString() == "Mientras")
-                            {
-                                Boolean w = false;
-                                String condicion = action(nodo.ChildNodes[2]);
-                                if (condicion == "1" || condicion == "true")
-                                {
-                                    w = true;
-                                }
-                                Variables.pilaAmbito.Push("Else");
-                                Variables.nivelAmbito += 1;
-                                while (w)
-                                {
-                                    detener = false;
-                                    continuar = false;
-                                    action(nodo.ChildNodes[5]);
-                                    condicion = action(nodo.ChildNodes[2]);
-                                    if (condicion == "1" || condicion == "true")
-                                    {
-                                        w = true;
-                                    }
-                                    else
-                                    {
-                                        w = false;
-                                    }
-                                    limite += 1;
-                                    if (limite == 100)
-                                        break;
-
-                                    if (detener == true)
-                                        w = false;
-                                }
-
-                                detener = false;
-                                continuar = false;
-                                Variables.eliminarAmbito();
-                            }
-                            else
-                            {
-                                int limit = 0;
-                                Boolean w = true;
-                                String condicion = action(nodo.ChildNodes[2]);
-                                if (condicion == "0" || condicion == "false")
-                                {
-                                    w = false;
-                                }
-                                Variables.pilaAmbito.Push("Else");
-                                Variables.nivelAmbito += 1;
-                                while (!w) //falso
-                                {
-                                    detener = false;
-                                    continuar = false;
-                                    action(nodo.ChildNodes[5]);
-                                    condicion = action(nodo.ChildNodes[2]);
-                                    if (condicion == "1" || condicion == "true")
-                                    {
-                                        w = true;
-                                    }
-                                    else
-                                    {
-                                        w = false;
-                                    }
-                                    limit += 1;
-                                    if (limit == 100)
-                                        break;
-                                    if (detener == true)
-                                        w = true;
-                                }
-
-                                detener = false;
-                                continuar = false;
-                                Variables.eliminarAmbito();
-                            }
-                        }
-                        break;
-                    }
-                case "SWITCH":
-                    {
-                        boolean = false;
-                        detener = false;
-                        continuar = false;
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            sentencia = action(nodo.ChildNodes[2]);
-                            if (PrimerRecorrido.concatenar == false)//Numero
-                            {
-                                if (sentencia == "1" || sentencia == "0")
-                                {
-                                    Reporte.agregarMensajeError("Tipo Bool no permitido en Selecciona", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                }
-                                tipo = "Number";
-                            }
-                            else //Cadena
-                            {
-                                tipo = "String";
-                            }
-                            action(nodo.ChildNodes[4]);
-                            detener = false;
-                            continuar = false;
-                        }
-                        else if (nodo.ChildNodes.Count == 6)
-                        {
-                            sentencia = action(nodo.ChildNodes[2]);
-                            action(nodo.ChildNodes[4]);
-                            if (boolean == false)
-                            {
-                                action(nodo.ChildNodes[5]);
-                            }
-                            detener = false;
-                            continuar = false;
-                        }
-
-                        break;
-                    }
-                case "CASE":
-                    {
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            result = action(nodo.ChildNodes[0]);
-                            if (result == sentencia)
-                            {
-                                Variables.pilaAmbito.Push("Case");
-                                Variables.nivelAmbito += 1;
-                                boolean = true; //Entro
-                                action(nodo.ChildNodes[3]);
-                                Variables.eliminarAmbito();
-                            }
-                        }
-                        else if (nodo.ChildNodes.Count == 6)
-                        {
-                            action(nodo.ChildNodes[0]);
-                            if (boolean == false)//Si no ha hecho ningun case
-                            {
-                                result = action(nodo.ChildNodes[1]);
-                                if (result == sentencia)
-                                {
-                                    Variables.pilaAmbito.Push("Case");
-                                    Variables.nivelAmbito += 1;
-                                    boolean = true;
-                                    action(nodo.ChildNodes[4]);
-                                    Variables.eliminarAmbito();
-                                }
-                            }
-                        }
-                        break;
-                    }
-                case "DEFAULT":
-                    {
-                        if (nodo.ChildNodes.Count == 5)
-                        {
-                            Variables.pilaAmbito.Push("Default");
-                            Variables.nivelAmbito += 1;
-                            action(nodo.ChildNodes[3]);
-                            Variables.eliminarAmbito();
-                        }
-                        break;
-                    }
-                case "FOR":
-                    {
-                        if (nodo.ChildNodes.Count == 14)
-                        {
-                            Variables.pilaAmbito.Push("For");
-                            Variables.nivelAmbito += 1;
-                            String[] dato = (nodo.ChildNodes.ElementAt(3).ToString().Split(' '));
-                            String asig = action(nodo.ChildNodes[5]);
-                            String ambito = Variables.pilaAmbito.Peek().ToString();
-                            Variables.crearVariable("Number", dato[0], asig, ambito);
-
-                            Boolean f = false;
-                            int valor = Int32.Parse(asig);
-                            String condicion = action(nodo.ChildNodes[7]);
-                            if (condicion == "1" || condicion == "true")
-                            {
-                                f = true;
-                            }
-                            int limite = 0;
-                            while (f)
-                            {
-                                detener = false;
-                                continuar = false;
-                                action(nodo.ChildNodes[12]); //accion
-                                //
-                                if (nodo.ChildNodes[9].Term.Name.ToString() == "++")
-                                {
-                                    valor += 1;
-                                }
-                                else
-                                {
-                                    valor -= 1;
-                                }
-                                Variables.asignarVariable(dato[0], valor.ToString(), ambito);
-                                condicion = action(nodo.ChildNodes[7]);
-                                if (condicion == "1" || condicion == "true")
-                                {
-                                    f = true;
-                                }
-                                else
-                                {
-                                    f = false;
-                                }
-                                limite += 1;
-                                if (limite == 100)
-                                    break;
-                                if (detener == true)
-                                    f = false;
-                            }
-                            detener = false;
-                            continuar = false;
-
-                            Variables.eliminarAmbito();
-                        }
-                        break;
-                    }
                 case "EXPRESION":
                     {
                         if (nodo.ChildNodes.Count == 1)
@@ -680,9 +317,10 @@ namespace SBScript
                 case "E":
                     {
                         //    MessageBox.Show("E");
-                        if (nodo.ChildNodes.Count == 1 || nodo.ChildNodes.Count == 2 || nodo.ChildNodes.Count == 3)
+                        if (nodo.ChildNodes.Count == 1|| nodo.ChildNodes.Count == 2||nodo.ChildNodes.Count == 3)
                         {
                             result = resolverOperacion(nodo).ToString();
+
                         }
                         break;
                     }
@@ -691,8 +329,6 @@ namespace SBScript
                     break;
             }
             return result;
-
-
         }
 
         public static String resolverOperacion(ParseTreeNode root)
@@ -771,49 +407,26 @@ namespace SBScript
                         return "";
                     }
                 case 2:
-                    String ss = root.ChildNodes.ElementAt(0).ToString().Substring(0, 2);
-                    switch (ss)
+                    String res = action(root.ChildNodes[1]);
+                    try
                     {
-
-                        case "- ":
-                            String res = action(root.ChildNodes[1]);
-                            try
-                            {
-                                if (PrimerRecorrido.concatenar == false)
-                                {
-                                    Double v1 = Convert.ToDouble(res);
-                                    v1 = v1 * (-1);
-                                    res = v1.ToString();
-                                    return res;
-                                }
-                                else
-                                {
-                                    return "0";
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                            }
-                            return "";
-
-                        case "! ":
-                            String r = action(root.ChildNodes[1]);
-                            if (r == "0" || r == "false")
-                            {
-                                return "1";
-                            }
-                            else if (r == "1" || r == "true")
-                            {
-                                return "0";
-                            }
-                            else
-                            {
-                                Reporte.agregarMensajeError("No se puede negar, no es una variable bool", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                            }
-                            return "";
+                        if (PrimerRecorrido.concatenar == false)
+                        {
+                            Double v1 = Convert.ToDouble(res);
+                            v1 = v1 * (-1);
+                            res = v1.ToString();
+                            return res;
+                        }
+                        else
+                        {
+                            return "0";
+                        }
                     }
-                    break;
+                    catch (Exception e)
+                    {
+                        MessageBox.Show("E");
+                    }
+                    return "";
 
                 case 3: //Nodo binario
                     String resultado = "";
@@ -888,112 +501,72 @@ namespace SBScript
 
                         case "- ": //E-E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
-                            c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            try
                             {
-                                try
-                                {
-                                    Double r = Convert.ToDouble(E1) - Convert.ToDouble(E2);
-                                    resultado = r.ToString();
-                                    return resultado;
+                                Double r = Convert.ToDouble(E1) - Convert.ToDouble(E2);
+                                resultado = r.ToString();
+                                return resultado;
 
-                                }
-                                catch (Exception e)
-                                {
-                                    MessageBox.Show("E");
-                                    return "";
-                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                Reporte.agregarMensajeError("No se puede realizar la resta", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                MessageBox.Show("E");
                                 return "";
                             }
                         case "/ ": //E/E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
-                            c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            try
                             {
-                                try
+                                Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
+                                resultado = r.ToString();
+                                if (resultado == "NaN" || resultado == "∞")
                                 {
-                                    Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
-                                    resultado = r.ToString();
-                                    if (resultado == "NaN" || resultado == "∞")
-                                    {
-                                        Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                        return "0";
-                                    }
-                                    return resultado;
+                                    Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "0";
+                                }
+                                return resultado;
 
-                                }
-                                catch (Exception e)
-                                {
-                                    MessageBox.Show("E");
-                                    return "";
-                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                Reporte.agregarMensajeError("No se puede realizar la divison", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                MessageBox.Show("E");
                                 return "";
                             }
                         case "* ": //E*E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
-                            c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            try
                             {
-                                try
-                                {
-                                    Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
-                                    resultado = r.ToString();
-                                    return resultado;
+                                Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
+                                resultado = r.ToString();
+                                return resultado;
 
-                                }
-                                catch (Exception e)
-                                {
-                                    MessageBox.Show("E");
-                                    return "";
-                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                Reporte.agregarMensajeError("No se puede realizar la multiplicacion", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                MessageBox.Show("E");
                                 return "";
                             }
                         case "% ": //E*E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
-                            c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            try
                             {
-                                try
+                                Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
+                                resultado = r.ToString();
+                                if (resultado == "NaN" || resultado == "∞")
                                 {
-                                    Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
-                                    resultado = r.ToString();
-                                    if (resultado == "NaN" || resultado == "∞")
-                                    {
-                                        Reporte.agregarMensajeError("Error al operar modulo con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                        return "0";
-                                    }
-                                    return resultado;
+                                    Reporte.agregarMensajeError("Error al operar modulo con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "0";
+                                }
+                                return resultado;
 
-                                }
-                                catch (Exception e)
-                                {
-                                    MessageBox.Show("E");
-                                    return "";
-                                }
                             }
-                            else
+                            catch (Exception e)
                             {
-                                Reporte.agregarMensajeError("No se puede realizar el modulo", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                MessageBox.Show("E");
                                 return "";
                             }
 
@@ -1357,6 +930,7 @@ namespace SBScript
             }
             return "";
         }
+
 
     }
 }

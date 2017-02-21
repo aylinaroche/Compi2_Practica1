@@ -10,7 +10,7 @@ using System.Windows.Forms;
 namespace SBScript
 {
     class DOT
-    {  
+    {
         private static int contador;
         private static String grafo;
         public static String getDOT(ParseTreeNode raiz)
@@ -48,8 +48,8 @@ namespace SBScript
         private static String grafo;
         public static String getDotFuncion(ParseTreeNode raiz)
         {
-            grafo = "digraph G{";
-            grafo += "nodo0[label= \"" + escapar(raiz.ToString()) + "\"];\n";
+            grafo = "digraph G{ \n rankdir=LR;";
+            grafo += "nodo0[shape=record, color=blue, label= \"" + escaparAST(raiz.ToString()) + "\"];\n";
             contador = 1;
             recorrerAstFuncion("nodo0", raiz);
             grafo += "}";
@@ -61,55 +61,16 @@ namespace SBScript
             foreach (ParseTreeNode hijo in hijos.ChildNodes)
             {
                 String nombreHijo = "nodo" + contador.ToString();
-                String nombre = escapar(hijo.ToString());
-                if (nombre == "SI")
-                {
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else if (nombre == "OP")
-                {
-                    nombre = "EXPRESION";
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else if (nombre == "INSTRUCCIONES")
-                {
-                    nombre = "INSTRUCCIONES";
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else if (nombre == "VAR")
-                {
-                    nombre = "LISTA";
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else if (nombre == "DECLARACION")
-                {
-                    nombre = "DECLARACION";
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else if (nombre == "RETORNO")
-                {
-                    nombre = "RETORNO";
-                    grafo += nombreHijo + "[label= \"" + nombre + "\"]";
-                    grafo += padre + "->" + nombreHijo + ";\n";
-                    contador++;
-                }
-                else
-                
-                    recorrerAstFuncion(nombreHijo, hijo);
-                
+                String nombre = escaparAST(hijo.ToString());
+
+                grafo += nombreHijo + "[shape=record, color=blue, label= \"" + nombre + "\"]";
+                grafo += padre + "->" + nombreHijo + ";\n";
+                contador++;
+                recorrerAstFuncion(nombreHijo, hijo);
+
             }
         }
-        private static String escapar(String cadena)
+        private static String escaparAST(String cadena)
         {
             cadena = cadena.Replace("\\", "\\\\");
             cadena = cadena.Replace("\"", "\\\\");
@@ -120,26 +81,80 @@ namespace SBScript
 
         public static String getDotEXP(ParseTreeNode raiz)
         {
-            grafo = "digraph G{";
-            grafo += "nodo0[label= \"" + escaparEXP(raiz.ToString()) + "\"];\n";
+            grafo = "digraph G{ \n";
+            grafo += "nodo0[ color=purple, label= \"" + escapar(raiz.ToString()) + "\"];\n";
             contador = 1;
-            recorrerAST("nodo0", raiz);
+            recorrerEXP("nodo0", raiz);
             grafo += "}";
 
             return grafo;
         }
-        private static void recorrerAST(String padre, ParseTreeNode hijos)
+        private static void recorrerEXP(String padre, ParseTreeNode hijos)
         {
-            foreach (ParseTreeNode hijo in hijos.ChildNodes)
+            if (hijos.ChildNodes.Count == 3)
             {
-                String nombreHijo = "nodo" + contador.ToString();
-                grafo += nombreHijo + "[label= \"" + escaparEXP(hijo.ToString()) + "\"]";
-                grafo += padre + "->" + nombreHijo + ";\n";
+                String nombrehijo = "nodo" + contador.ToString();
+                if (hijos.ChildNodes[1].Term.Name.ToString() == "E")
+                {
+                    recorrerEXP(nombrehijo, hijos.ChildNodes.ElementAt(1));
+                }
+                else
+                {                
+                    if (hijos.ChildNodes.ElementAt(1).Token.Text == "&&" || hijos.ChildNodes.ElementAt(1).Token.Text == "||" || hijos.ChildNodes.ElementAt(1).Token.Text == "|&")
+                    {
+                        grafo = grafo + nombrehijo + "[ color=blue, label=\"" + escapar(hijos.ChildNodes.ElementAt(1).Token.Text) + " | (Logica) \"];\n";
+                    }
+                    else if (hijos.ChildNodes.ElementAt(1).Token.Text == "==" || hijos.ChildNodes.ElementAt(1).Token.Text == "!=" || hijos.ChildNodes.ElementAt(1).Token.Text == "<" || hijos.ChildNodes.ElementAt(1).Token.Text == ">" || hijos.ChildNodes.ElementAt(1).Token.Text == "<=" || hijos.ChildNodes.ElementAt(1).Token.Text == ">=")
+                    {
+                        grafo = grafo + nombrehijo + "[ color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(1).Token.Text) + " | (Relacional) \"];\n";
+                    }
+                    else
+                    {
+                        grafo = grafo + nombrehijo + "[color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(1).Token.Text) + " | (Aritmetica) \"];\n";
+                    }
+                   
+                }
+                grafo = grafo + padre + "->" + nombrehijo + "; \n";
                 contador++;
-                recorrerAST(nombreHijo, hijo);
+                recorrerEXP(nombrehijo, hijos.ChildNodes.ElementAt(0));
+                recorrerEXP(nombrehijo, hijos.ChildNodes.ElementAt(2));
+
+            }
+            else if (hijos.ChildNodes.Count == 0)
+            {
+                String nombrehijo = "nodo" + contador.ToString();
+                grafo = grafo + nombrehijo + "[color=purple, label=\"" + escapar(hijos.ToString()) + "\"];\n";
+                grafo = grafo + padre + "->" + nombrehijo + "; \n";
+                contador++;
+            }
+            else if (hijos.ChildNodes.ElementAt(0).ToString() == "LLAMADA")
+            {
+                String nombrehijo = "nodo" + contador.ToString();
+                grafo = grafo + nombrehijo + "[color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(0).ChildNodes.ElementAt(0).Token.Text) + " | (Funcion) \"];\n";
+                grafo = grafo + padre + "->" + nombrehijo + "; \n";
+                contador++;
+            }
+            else if (hijos.ChildNodes.Count == 2)
+            {
+                String nombrehijo = "nodo" + contador.ToString();
+                if (hijos.ChildNodes.ElementAt(0).Token.Text == "!")
+                {
+                    grafo = grafo + nombrehijo + "[color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(0).Token.Text) + " | (Logica) \"];\n";
+                }
+                else
+                {
+                    grafo = grafo + nombrehijo + "[color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(0).Token.Text) + " | (Aritmetica) \"];\n";
+                }
+                grafo = grafo + padre + "->" + nombrehijo + "; \n";
+                contador++;
+                recorrerEXP(nombrehijo, hijos.ChildNodes.ElementAt(1));
+            }
+            else if (hijos.ChildNodes.Count == 1)
+            {
+                recorrerEXP(padre, hijos.ChildNodes.ElementAt(0));
             }
         }
-        private static String escaparEXP(String cadena)
+        private static String escapar(String cadena)
         {
             cadena = cadena.Replace("\\", "\\\\");
             cadena = cadena.Replace("\"", "\\\\");

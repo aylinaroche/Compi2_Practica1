@@ -43,7 +43,7 @@ namespace SBScript
                             Variables.pilaAmbito.Push("Global");
                             Variables.nivelAmbito = 0;
                             action(nodo.ChildNodes[0]);
-                        }
+                       }
                         break;
                     }
                 case "ENCABEZADO":
@@ -62,13 +62,13 @@ namespace SBScript
                 case "C":
                     if (nodo.ChildNodes.Count == 2)
                     {
-                        String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
+                        String[] dato = (nodo.ChildNodes.ElementAt(1).ToString().Split('('));
 
-                        if (dato[1] == "(numero)")
+                        if (dato[1] == "numero)")
                         {
-                            Listas.incerteza = Int32.Parse(dato[0]);
+                            Listas.incerteza = Double.Parse(dato[0]);
                         }
-                        else if (dato[1] == "(cadena)")
+                        else if (dato[1] == "cadena)")
                         {
                             String ruta = dato[0];
                             if (Directory.Exists(ruta))
@@ -78,7 +78,7 @@ namespace SBScript
                             else
                             {
                                 Reporte.agregarError("No existe ruta: " + ruta, "Error General", 0, 0);
-                                Listas.ruta = "C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript";
+                              //  Listas.ruta = "C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript";
                             }
                         }
                     }
@@ -99,69 +99,7 @@ namespace SBScript
                         {
                             String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
                             result = numero[0];
-
-                        }
-                        break;
-                    }
-                case "DECLARACION":
-                    {
-                        if (nodo.ChildNodes.Count == 3)
-                        {
-                            String tipo = action(nodo.ChildNodes[0]);
-                            String vars = action(nodo.ChildNodes[1]);
-                            String[] var = (vars.Split(','));
-                            String ambito = Variables.pilaAmbito.Peek().ToString();
-                            for (int i = 0; i < var.Length - 1; i++)
-                            {
-                                Variables.declararVariable(tipo, var[i], "", ambito);
-                            }
-                        }
-                        else if (nodo.ChildNodes.Count == 4 || nodo.ChildNodes.Count == 5)
-                        {
-                            String tipo = action(nodo.ChildNodes[0]);
-                            String vars = action(nodo.ChildNodes[1]);
-                            String[] var = (vars.Split(','));
-                            String asig = action(nodo.ChildNodes[3]);
-                            String ambito = Variables.pilaAmbito.Peek().ToString();
-                            if (asig != "error")
-                            {
-                                for (int i = 0; i < var.Length - 1; i++)
-                                {
-                                    Variables.declararVariable(tipo, var[i], asig, ambito);
-                                }
-                            }
-                            else
-                            {
-                                Reporte.agregarMensajeError("Error al declarar la expresion en una variable global", "Error Semantico", 0, 0);
-                            }
-                        }
-                        break;
-                    }
-                case "VAR":
-                    {
-                        if (nodo.ChildNodes.Count == 1)
-                        {
-                            String[] numero = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
-                            variables += numero[0] + ",";
-                            result = variables;
-                        }
-                        else if (nodo.ChildNodes.Count == 3)
-                        {
-                            result = action(nodo.ChildNodes[0]);
-                            String[] dato = nodo.ChildNodes.ElementAt(2).ToString().Split(' ');
-                            result += dato[0] + ",";
-                        }
-                        break;
-                    }
-                case "ASIGNACION":
-                    {
-                        if (nodo.ChildNodes.Count == 3 || nodo.ChildNodes.Count == 4)
-                        {
-                            String id = action(nodo.ChildNodes[0]);
-                            String asig = action(nodo.ChildNodes[2]);
-                            Variable v = new Variable();
-                            Reporte.agregarMensajeError("Error al asignar una expresion en una variable global", "Error Semantico", 0, 0);
-                        }
+                      }
                         break;
                     }
                 case "MOSTRAR":
@@ -169,7 +107,6 @@ namespace SBScript
                         if (nodo.ChildNodes.Count == 5)
                         {
                             Reporte.agregarMensajeError("No puede imprimir en el area de variables globales", "Error Semantico", 0, 0);
-                            //action(nodo.ChildNodes[2]);
                         }
                         break;
                     }
@@ -432,15 +369,15 @@ namespace SBScript
                 case "E":
                     {
                         //    MessageBox.Show("E");
-                        if (nodo.ChildNodes.Count == 1)
-                        {
-                            result = resolverOperacion(nodo).ToString();
-                        }
-                        else if (nodo.ChildNodes.Count == 3)
-                        {
-                            result = resolverOperacion(nodo).ToString();
+                        //if (nodo.ChildNodes.Count == 1)
+                        //{
+                        //    result = resolverOperacion(nodo).ToString();
+                        //}
+                        //else if (nodo.ChildNodes.Count == 3)
+                        //{
+                        //    result = resolverOperacion(nodo).ToString();
 
-                        }
+                        //}
                         break;
                     }
 
@@ -450,555 +387,555 @@ namespace SBScript
             return result;
         }
 
-        public static String resolverOperacion(ParseTreeNode root)
-        {
-            concatenar = false;
-            String resultado = expresion(root);
-            return resultado;
-        }
+        //public static String resolverOperacion(ParseTreeNode root)
+        //{
+        //    concatenar = false;
+        //    String resultado = expresion(root);
+        //    return resultado;
+        //}
 
-        private static String expresion(ParseTreeNode root)
-        {
-            switch (root.ChildNodes.Count)
-            {
-                case 1:
-                    String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
-                    Listas.nodoActual = root.ChildNodes[0];
-                    if (dato[1] == "cadena)")
-                    {
-                        concatenar = true;
-                        String cadena = dato[0].Substring(0, dato[0].Length - 1);
-                        return cadena;
-                    }
-                    else if (dato[1] == "numero)")
-                    {
-                        concatenar = false;
-                        return dato[0];
-                    }
-                    else if (dato[1] == "id)")
-                    {
-                        Variable v = Variables.obtenerVariable(dato[0]);
-                        if (v != null)
-                        {
-                            if (v.tipo == "string")
-                            {
-                                concatenar = true;
-                            }
-                            return v.valor;
-                        }
-                        else
-                        {
-                            Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                            concatenar = true;
-                            return "error";
-                        }
+        //private static String expresion(ParseTreeNode root)
+        //{
+        //    switch (root.ChildNodes.Count)
+        //    {
+        //        case 1:
+        //            String[] dato = (root.ChildNodes.ElementAt(0).ToString().Split('('));
+        //            Listas.nodoActual = root.ChildNodes[0];
+        //            if (dato[1] == "cadena)")
+        //            {
+        //                concatenar = true;
+        //                String cadena = dato[0].Substring(0, dato[0].Length - 1);
+        //                return cadena;
+        //            }
+        //            else if (dato[1] == "numero)")
+        //            {
+        //                concatenar = false;
+        //                return dato[0];
+        //            }
+        //            else if (dato[1] == "id)")
+        //            {
+        //                Variable v = Variables.obtenerVariable(dato[0]);
+        //                if (v != null)
+        //                {
+        //                    if (v.tipo == "string")
+        //                    {
+        //                        concatenar = true;
+        //                    }
+        //                    return v.valor;
+        //                }
+        //                else
+        //                {
+        //                    Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+        //                    concatenar = true;
+        //                    return "error";
+        //                }
 
-                    }
-                    else if (dato[1] == "Keyword)")
-                    {
-                        boolean = true;
-                        concatenar = false;
-                        if (dato[0] == "true " || dato[0] == "true")
-                        {
-                            return "1";
-                        }
-                        else
-                        {
-                            return "0";
-                        }
-                    }
-                    else if (dato[0] == "LLAMADA")
-                    {
-                        return "error";
-                    }
-                    else
-                    {
-                        concatenar = true;
-                        return "";
-                    }
+        //            }
+        //            else if (dato[1] == "Keyword)")
+        //            {
+        //                boolean = true;
+        //                concatenar = false;
+        //                if (dato[0] == "true " || dato[0] == "true")
+        //                {
+        //                    return "1";
+        //                }
+        //                else
+        //                {
+        //                    return "0";
+        //                }
+        //            }
+        //            else if (dato[0] == "LLAMADA")
+        //            {
+        //                return "error";
+        //            }
+        //            else
+        //            {
+        //                concatenar = true;
+        //                return "";
+        //            }
 
-                case 2:
-                    String res = action(root.ChildNodes[1]);
-                    try
-                    {
-                        if (concatenar == false)
-                        {
-                            Double v1 = Convert.ToDouble(res);
-                            v1 = v1 * (-1);
-                            res = v1.ToString();
-                            return res;
-                        }
-                        else
-                        {
-                            return "0";
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show("E");
-                    }
-                    return "";
+        //        case 2:
+        //            String res = action(root.ChildNodes[1]);
+        //            try
+        //            {
+        //                if (concatenar == false)
+        //                {
+        //                    Double v1 = Convert.ToDouble(res);
+        //                    v1 = v1 * (-1);
+        //                    res = v1.ToString();
+        //                    return res;
+        //                }
+        //                else
+        //                {
+        //                    return "0";
+        //                }
+        //            }
+        //            catch (Exception e)
+        //            {
+        //                MessageBox.Show("E");
+        //            }
+        //            return "";
 
-                case 3: //Nodo binario
-                    String resultado = "";
-                    String E1 = "";
-                    String E2 = "";
-                    Double var1, var2;
+        //        case 3: //Nodo binario
+        //            String resultado = "";
+        //            String E1 = "";
+        //            String E2 = "";
+        //            Double var1, var2;
 
-                    switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 1))
-                    {
+        //            switch (root.ChildNodes.ElementAt(1).ToString().Substring(0, 1))
+        //            {
 
-                        case "+": //E+E
-                            boolean = false;
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            Boolean c1 = PrimerRecorrido.concatenar;
-                            Boolean b1 = boolean;
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            Boolean c2 = PrimerRecorrido.concatenar;
-                            Boolean b2 = boolean;
-                            if (b1 == false || b2 == false)
-                            {
-                                if (c1 == true || c2 == true)
-                                {
-                                    resultado = E1 + E2;
-                                    PrimerRecorrido.concatenar = true;
-                                    return resultado;
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        Double r = v1 + v2;
-                                        resultado = r.ToString();
-                                        PrimerRecorrido.concatenar = false;
-                                        return resultado;
+        //                case "+": //E+E
+        //                    boolean = false;
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    Boolean c1 = PrimerRecorrido.concatenar;
+        //                    Boolean b1 = boolean;
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    Boolean c2 = PrimerRecorrido.concatenar;
+        //                    Boolean b2 = boolean;
+        //                    if (b1 == false || b2 == false)
+        //                    {
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            resultado = E1 + E2;
+        //                            PrimerRecorrido.concatenar = true;
+        //                            return resultado;
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                Double r = v1 + v2;
+        //                                resultado = r.ToString();
+        //                                PrimerRecorrido.concatenar = false;
+        //                                return resultado;
 
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (E1 == "1" || E2 == "1")
-                                {
-                                    return "1";
-                                }
-                                return "0";
-                            }
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        if (E1 == "1" || E2 == "1")
+        //                        {
+        //                            return "1";
+        //                        }
+        //                        return "0";
+        //                    }
 
-                        case "-": //E-E
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                Double r = Convert.ToDouble(E1) - Convert.ToDouble(E2); ;
-                                resultado = r.ToString();
-                                return resultado;
+        //                case "-": //E-E
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        Double r = Convert.ToDouble(E1) - Convert.ToDouble(E2); ;
+        //                        resultado = r.ToString();
+        //                        return resultado;
 
-                            }
-                            catch (Exception e)
-                            {
-                                return "error";
-                                return "";
-                            }
-                        case "/": //E/E
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
-                                resultado = r.ToString();
-                                if (resultado == "NaN" || resultado == "∞")
-                                {
-                                    Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                    return "0";
-                                }
-                                return resultado;
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        return "error";
+        //                        return "";
+        //                    }
+        //                case "/": //E/E
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
+        //                        resultado = r.ToString();
+        //                        if (resultado == "NaN" || resultado == "∞")
+        //                        {
+        //                            Reporte.agregarMensajeError("Error al dividir con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+        //                            return "0";
+        //                        }
+        //                        return resultado;
 
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                                return "";
-                            }
-                        case "*": //E*E
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
-                                resultado = r.ToString();
-                                return resultado;
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "";
+        //                    }
+        //                case "*": //E*E
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
+        //                        resultado = r.ToString();
+        //                        return resultado;
 
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                                return "";
-                            }
-                        case "% ": //E*E
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
-                                resultado = r.ToString();
-                                return resultado;
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "";
+        //                    }
+        //                case "% ": //E*E
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
+        //                        resultado = r.ToString();
+        //                        return resultado;
 
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                                return "";
-                            }
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "";
+        //                    }
 
-                        case "> ":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "1";
-                                    }
-                                    return "0";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 > v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
+        //                case "> ":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "1";
+        //                            }
+        //                            return "0";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 > v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
 
-                        case "< ":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "0";
-                                    }
-                                    return "1";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 < v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case ">=":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "1";
-                                    }
-                                    return "0";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 >= v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case "<=":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "0";
-                                    }
-                                    return "1";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 <= v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case "==":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "1";
-                                    }
-                                    return "0";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 == v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case "!=":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.compararCadenas(E1, E2))
-                                    {
-                                        return "false";
-                                    }
-                                    return "true";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        if (v1 != v2)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case "~ ":
-                            try
-                            {
-                                E1 = expresion(root.ChildNodes.ElementAt(0));
-                                c1 = PrimerRecorrido.concatenar;
-                                E2 = expresion(root.ChildNodes.ElementAt(2));
-                                c2 = PrimerRecorrido.concatenar;
-                                if (c1 == true || c2 == true)
-                                {
-                                    PrimerRecorrido.concatenar = true;
-                                    if (Listas.semejarCadenas(E1.ToLower(), E2.ToLower()))
-                                    {
-                                        return "1";
-                                    }
-                                    return "0";
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        Double v1 = Convert.ToDouble(E1);
-                                        Double v2 = Convert.ToDouble(E2);
-                                        PrimerRecorrido.concatenar = false;
-                                        Double abs = Math.Abs(v1 - v2);
-                                        if (abs < Listas.incerteza)
-                                        {
-                                            return "1";
-                                        }
-                                        return "0";
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        MessageBox.Show("E");
-                                        return "";
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                MessageBox.Show("E");
-                                return "error";
-                            }
-                        case "&&":
+        //                case "< ":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "0";
+        //                            }
+        //                            return "1";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 < v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case ">=":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "1";
+        //                            }
+        //                            return "0";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 >= v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case "<=":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "0";
+        //                            }
+        //                            return "1";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 <= v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case "==":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "1";
+        //                            }
+        //                            return "0";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 == v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case "!=":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.compararCadenas(E1, E2))
+        //                            {
+        //                                return "false";
+        //                            }
+        //                            return "true";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                if (v1 != v2)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case "~ ":
+        //                    try
+        //                    {
+        //                        E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                        c1 = PrimerRecorrido.concatenar;
+        //                        E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                        c2 = PrimerRecorrido.concatenar;
+        //                        if (c1 == true || c2 == true)
+        //                        {
+        //                            PrimerRecorrido.concatenar = true;
+        //                            if (Listas.semejarCadenas(E1.ToLower(), E2.ToLower()))
+        //                            {
+        //                                return "1";
+        //                            }
+        //                            return "0";
+        //                        }
+        //                        else
+        //                        {
+        //                            try
+        //                            {
+        //                                Double v1 = Convert.ToDouble(E1);
+        //                                Double v2 = Convert.ToDouble(E2);
+        //                                PrimerRecorrido.concatenar = false;
+        //                                Double abs = Math.Abs(v1 - v2);
+        //                                if (abs < Listas.incerteza)
+        //                                {
+        //                                    return "1";
+        //                                }
+        //                                return "0";
+        //                            }
+        //                            catch (Exception e)
+        //                            {
+        //                                MessageBox.Show("E");
+        //                                return "";
+        //                            }
+        //                        }
+        //                    }
+        //                    catch
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "error";
+        //                    }
+        //                case "&&":
 
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
-                                if (E1 == "1" && E2 == "1" || E1 == "0" && E2 == "0")
-                                {
-                                    return "1";
-                                }
-                                else
-                                {
-                                    return "0";
-                                }
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
+        //                        if (E1 == "1" && E2 == "1" || E1 == "0" && E2 == "0")
+        //                        {
+        //                            return "1";
+        //                        }
+        //                        else
+        //                        {
+        //                            return "0";
+        //                        }
 
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                                return "";
-                            }
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "";
+        //                    }
 
-                        case "||":
-                            E1 = expresion(root.ChildNodes.ElementAt(0));
-                            E2 = expresion(root.ChildNodes.ElementAt(2));
-                            try
-                            {
-                                if (E1 == "1" || E2 == "1")
-                                {
-                                    return "1";
-                                }
-                                else
-                                {
-                                    return "0";
-                                }
+        //                case "||":
+        //                    E1 = expresion(root.ChildNodes.ElementAt(0));
+        //                    E2 = expresion(root.ChildNodes.ElementAt(2));
+        //                    try
+        //                    {
+        //                        if (E1 == "1" || E2 == "1")
+        //                        {
+        //                            return "1";
+        //                        }
+        //                        else
+        //                        {
+        //                            return "0";
+        //                        }
 
-                            }
-                            catch (Exception e)
-                            {
-                                MessageBox.Show("E");
-                                return "";
-                            }
+        //                    }
+        //                    catch (Exception e)
+        //                    {
+        //                        MessageBox.Show("E");
+        //                        return "";
+        //                    }
 
 
-                        default: //(E)
-                            return expresion(root.ChildNodes.ElementAt(1));
-                    }
+        //                default: //(E)
+        //                    return expresion(root.ChildNodes.ElementAt(1));
+        //            }
 
-            }
-            return "";
-        }
+        //    }
+        //    return "";
+        //}
 
     }
 }

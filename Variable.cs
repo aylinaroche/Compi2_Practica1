@@ -29,7 +29,7 @@ namespace SBScript
             for (int a = 0; a < listaVariables.Count; a++)
             {
                 v = (Variable)listaVariables[a];
-                if (v.nombre == nombre && v.tipo == tipo && v.ambito == ambito)
+                if (v.nombre == nombre && v.tipo == tipo && v.ambito == ambito&& v.nivel==nivelAmbito)
                 {
                     Reporte.agregarMensajeError("La variable '" + v.nombre + "' ya existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                     return false;
@@ -104,6 +104,13 @@ namespace SBScript
             nueva.tipo = tipo;
             nueva.nombre = nombre;
             nueva.valor = valor;
+            if (tipo == "Bool")
+            {
+                if (nueva.valor == "1")
+                    nueva.valor = "true";
+                else if (nueva.valor == "0")
+                    nueva.valor = "false";
+            }
             nueva.ambito = ambito;
             nueva.nivel = nivelAmbito;
             listaVariables.Add(nueva);

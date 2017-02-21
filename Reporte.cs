@@ -69,7 +69,7 @@ namespace SBScript
             {
                 Listas.ruta="C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript";
             }
-            String ruta = Listas.ruta+"/Reporte.html";
+            String ruta = Listas.quitarEspaciosFinal(Listas.ruta)+"\\Reporte.html";
             
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(ruta))
             {  

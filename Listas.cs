@@ -11,12 +11,17 @@ namespace SBScript
     class Listas
     {
         public static double incerteza = 0.01;
-        public static string ruta = "";
+        public static String ruta = "";
+        public static String rutaDefinida = "C:/Users/Aylin/Documents/Visual Studio 2015/Projects/SBScript/Reportes/";
         public static ArrayList MensajeConsola = new ArrayList();
         public static Stack archivo = new Stack();
         public static ParseTreeNode nodoActual = null;
         public static Stack incluir = new Stack();
         public static String expresion = "";
+        public static int contadorEXP = 0;
+        public static String cadena = "";
+        public static Boolean asignacion = false;
+        public static String asignacionTipo = "";
         public static Boolean compararCadenas(String cadena1, String cadena2)
         {
             // igual_mayor = true;
@@ -42,13 +47,14 @@ namespace SBScript
                 {
                     return false;
                 }
-                
+
             }
 
             if (cadena1.Length >= cadena2.Length)
             {
                 return true;
-            }else
+            }
+            else
             {
                 return false;
             }
@@ -62,7 +68,8 @@ namespace SBScript
             if (cadena1.Length < cadena2.Length)
             {
                 return true;
-            }else if (cadena1.Length > cadena2.Length)
+            }
+            else if (cadena1.Length > cadena2.Length)
             {
                 return false;
             }
@@ -111,7 +118,7 @@ namespace SBScript
                 string c2 = cadena2.Substring(i, 1);
                 int ascii2 = Encoding.ASCII.GetBytes(c2)[0];
 
-                if (ascii1 > ascii2|| ascii1 < ascii2)
+                if (ascii1 > ascii2 || ascii1 < ascii2)
                 {
                     return true;
                 }
@@ -133,7 +140,7 @@ namespace SBScript
                 aumenta = nueva1.Length;
             }
 
-            for ( i = 0; i < aumenta; i++)
+            for (i = 0; i < aumenta; i++)
             {
                 string c1 = nueva1.Substring(i, 1);
                 int ascii1 = Encoding.ASCII.GetBytes(c1)[0];
@@ -171,7 +178,8 @@ namespace SBScript
                         cadenaNueva += c1;
                         espacio = false;
                     }
-                }else
+                }
+                else
                 {
                     cadenaNueva += c1;
                 }
@@ -182,11 +190,11 @@ namespace SBScript
 
         public static String quitarEspaciosFinal(String cadena)
         {
-            int i = 0; 
+            int i = 0;
             String cadenaNueva = "";
             ArrayList caracter = new ArrayList();
             Boolean espacio = true;
-            for (i = cadena.Length-1;i>-1 ; i--)
+            for (i = cadena.Length - 1; i > -1; i--)
             {
                 string c1 = cadena.Substring(i, 1);
 
@@ -213,6 +221,32 @@ namespace SBScript
             }
             return inversa;
         }
+
+        public static String cadenaMetodo(ParseTreeNode nodo)
+        {
+            cadena = "";
+            String cad = Listas.obtenerCadena(nodo);
+            cad = cad.Replace("(Keyword)", "").Replace("(Key symbol)","").Replace("(cadena)","").Replace("(numero)","").Replace("(id)","");
+            
+            return cad;
+        }
+        public static String obtenerCadena(ParseTreeNode nodo)
+        {
+            if (nodo.ChildNodes.Count == 0)
+            {
+                cadena += nodo.ToString();
+            }
+            else
+            {
+                for (int i = 0; i < nodo.ChildNodes.Count; i++)
+                {
+                    obtenerCadena(nodo.ChildNodes[i]);
+                }
+            }
+
+            return cadena;
+        }
+
     }
 
 }

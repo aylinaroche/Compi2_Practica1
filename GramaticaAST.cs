@@ -7,27 +7,26 @@ using Irony.Parsing;
 
 namespace SBScript
 {
-    public class Gramatica : Grammar
+    class GramaticaAST : Grammar
     {
-        public Gramatica() : base(caseSensitive: true)
+        public GramaticaAST() : base(caseSensitive: true)
         {
             #region ERs
             RegexBasedTerminal letra = new RegexBasedTerminal("letra", "[0-9]*[a-zA-Z][0-9a-zA-Z]");
-            //RegexBasedTerminal numero = new RegexBasedTerminal("numero", "[+|-]?[0-9]+");
             RegexBasedTerminal decim = new RegexBasedTerminal("decimal", "[0-9]* . [0-9]*");
             NumberLiteral numero = new NumberLiteral("numero");
             IdentifierTerminal id = new IdentifierTerminal("id");
-            CommentTerminal comMulti = new CommentTerminal("comMulti", "#*", "*#");
-            CommentTerminal comM = new CommentTerminal("comM", "#*", "*#");
+
             CommentTerminal comLine = new CommentTerminal("comLine", "#", "\n", "\r\n");
             CommentTerminal com = new CommentTerminal("com", "/n", "/r");
+            CommentTerminal comMulti = new CommentTerminal("comMulti", "#*", "*#");
+            CommentTerminal comM = new CommentTerminal("comM", "#*", "*#");
             StringLiteral cadena = new StringLiteral("cadena", "\"", StringOptions.IsTemplate);
 
-            base.NonGrammarTerminals.Add(comMulti);
-            base.NonGrammarTerminals.Add(comM);
             base.NonGrammarTerminals.Add(com);
             base.NonGrammarTerminals.Add(comLine);
-
+            base.NonGrammarTerminals.Add(comMulti);
+            base.NonGrammarTerminals.Add(comM);
             #endregion
 
             #region Terminales
@@ -132,20 +131,7 @@ namespace SBScript
             #endregion
 
             #region Gramatica
-            ENTRADA.Rule = INICIO;
-
-            INICIO.Rule = ENCABEZADO + INSTRUCCIONES
-                | INSTRUCCIONES
-                | ENCABEZADO; ///
-
-            ENCABEZADO.Rule = ENCABEZADO + C
-                | C;
-
-            C.Rule = incluye + id + extension
-                | define + numero
-                | define + cadena;
-
-            C.ErrorRule = SyntaxError + "}";
+            ENTRADA.Rule = INSTRUCCIONES;
 
             TIPO.Rule = tipoNumber
                  | tipoString
@@ -206,8 +192,8 @@ namespace SBScript
                   | TIPO + id;
 
             RETORNAR.Rule = retornar + EXPRESION + puntoComa
-                | retornar + EXPRESION
-                | retornar + puntoComa;
+                | retornar + EXPRESION;
+            //| retornar + puntoComa;
 
             MAIN.Rule = principal + parentesisA + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
@@ -237,8 +223,8 @@ namespace SBScript
 
             DEFAULT.Rule = defecto + dosPuntos + llaveA + INSTRUCCIONES + llaveC;
 
-            FOR.Rule = para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + aumentar + parentesisC + llaveA + INSTRUCCIONES + llaveC
-                | para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + disminuir + parentesisC + llaveA + INSTRUCCIONES + llaveC;
+            FOR.Rule = para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC
+                | para + parentesisA + tipoNumber + id + igual + EXPRESION + puntoComa + EXPRESION + puntoComa + EXPRESION + parentesisC + llaveA + INSTRUCCIONES + llaveC;
 
             EXPRESION.Rule = E;
 
@@ -282,16 +268,19 @@ namespace SBScript
 
             #region Preferencias
             this.Root = ENTRADA;
-       //     MarkTransient(E,TipoPARAMETRO,INSTRUCCION);
-     //       MarkPunctuation(parentesisA,parentesisC,puntoComa);
+            MarkTransient(E,TipoPARAMETRO,TIPO,LLAMADA,INSTRUCCION);
+            MarkPunctuation(parentesisA,parentesisC,puntoComa,llaveA,llaveC, igual, id, numero, cadena);
+            MarkPunctuation(menor, menori, menos, mas,por,div,mayor,mayori,diferente,modulo,semejante,or,and,xor);
+            MarkPunctuation(principal,si,sino, para,mientras,hasta,retornar,mostrar, selecciona,caso,defecto);
+            MarkPunctuation(tipoNumber,tipoBoolean,tipoString,tipoVoid,verdadero,falso,coma,dosPuntos);
+            MarkPunctuation(igualDoble, igual);
 
-  
-            this.RegisterOperators(1, Associativity.Left, "==","!=", "<", ">", "<=", ">=", "~");
+            this.RegisterOperators(1, Associativity.Left, "==", "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(2, Associativity.Left, "+", "-");
             this.RegisterOperators(3, Associativity.Left, "*", "/", "%");
             this.RegisterOperators(4, Associativity.Right, "^");
             //this.RegisterOperators(4, Associativity.Neutral, "- ");
-//            this.RegisterOperators(1, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
+            //            this.RegisterOperators(1, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(6, Associativity.Left, "||");
             this.RegisterOperators(7, Associativity.Left, "!&");
             this.RegisterOperators(8, Associativity.Left, "&&");
