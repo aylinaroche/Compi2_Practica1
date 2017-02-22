@@ -78,6 +78,12 @@ namespace SBScript
 
         public static void generarAST(ParseTreeNode raiz, String nombre)
         {
+            if(raiz== null)
+            {
+                Reporte.agregarMensajeError("La funcion es vacia", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                return;
+            }
+
             String grafodot = DIBUJAR.getDotFuncion(raiz);
             String ruta = "";
             if (Listas.ruta == "")
@@ -135,6 +141,11 @@ namespace SBScript
 
         public static void generarEXP(ParseTreeNode raiz, String nombre)
         {
+            if (raiz == null)
+            {
+                Reporte.agregarMensajeError("La expresion es vacia", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                return;
+            }
             String grafodot = DIBUJAR.getDotEXP(raiz);
             String ruta = "";
             if (Listas.ruta == "")

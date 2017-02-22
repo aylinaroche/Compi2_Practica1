@@ -72,6 +72,7 @@ namespace SBScript
             var and = ToTerm("&&");
             var not = ToTerm("!");
             var xor = ToTerm("!&");
+            var xor2 = ToTerm("|&");
             var semejante = ToTerm("~");
             var coma = ToTerm(",");
             var puntoComa = ToTerm(";");
@@ -264,6 +265,8 @@ namespace SBScript
                 | E + semejante + E
                 | E + or + E
                 | E + and + E
+                | E + xor + E
+                | E + xor2 + E
                 | not + E
                 | E + aumentar
                 | E + disminuir
@@ -293,9 +296,9 @@ namespace SBScript
             //this.RegisterOperators(4, Associativity.Neutral, "- ");
 //            this.RegisterOperators(1, Associativity.Left, "!=", "<", ">", "<=", ">=", "~");
             this.RegisterOperators(6, Associativity.Left, "||");
-            this.RegisterOperators(7, Associativity.Left, "!&");
+            this.RegisterOperators(7, Associativity.Left, "!&","|&");
             this.RegisterOperators(8, Associativity.Left, "&&");
-            this.RegisterOperators(9, Associativity.Left, "!");
+            //this.RegisterOperators(9, Associativity.Left, "(",")");
             #endregion
         }
     }

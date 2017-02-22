@@ -185,6 +185,7 @@ namespace SBScript
         public String retorno;
         public ParseTreeNode nodo;
         public ArrayList parametro;
+        public String archivo;
 
     }
 

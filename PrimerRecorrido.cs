@@ -20,7 +20,6 @@ namespace SBScript
         public static String action(ParseTreeNode nodo)
         {
             String result = null;
-            String variables = "";
             switch (nodo.Term.Name.ToString())
             {
                 case "INICIO":

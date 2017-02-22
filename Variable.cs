@@ -47,11 +47,11 @@ namespace SBScript
                 {
                     if (valor == "1")
                     {
-                        valor = "true";
+                       // valor = "true"; 
                     }
                     else if (valor == "0")
                     {
-                        valor = "false";
+                        //valor = "false";
                     }
                     else
                     {
@@ -105,12 +105,12 @@ namespace SBScript
             nueva.nombre = nombre;
             nueva.valor = valor;
             if (tipo == "Bool")
-            {
-                if (nueva.valor == "1")
-                    nueva.valor = "true";
-                else if (nueva.valor == "0")
-                    nueva.valor = "false";
-            }
+            //{
+            //    if (nueva.valor == "1")
+            //       // nueva.valor = "true";
+            //    else if (nueva.valor == "0")
+            //        //nueva.valor = "false";
+            //}
             nueva.ambito = ambito;
             nueva.nivel = nivelAmbito;
             listaVariables.Add(nueva);
@@ -136,11 +136,11 @@ namespace SBScript
                         {
                             if (valor == "1")
                             {
-                                valor = "true";
+                         //       valor = "true";
                             }
                             else if (valor == "0")
                             {
-                                valor = "false";
+                           //     valor = "false";
                             }
                             else
                             {

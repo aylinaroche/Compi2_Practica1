@@ -217,18 +217,18 @@ namespace SBScript
                 Variable v = (Variable)Variables.listaVariables[i];
                 txtConsola.Text += " -> " + v.tipo + ", " + v.nombre + ", " + v.valor + ", " + v.ambito + "\n";
             }
-            txtConsola.Text += "********************* \n";
-            for (int i = 0; i < Metodo_Funcion.listaMetodoFuncion.Count; i++)
-            {
-                MF m = (MF)Metodo_Funcion.listaMetodoFuncion[i];
-                txtConsola.Text += " -> " + m.tipo + ", " + m.nombre + "\n";
-                for (int j = 0; j < m.parametro.Count; j++)
-                {
-                    Parametro p = (Parametro)m.parametro[j];
-                    txtConsola.Text += "        -" + p.tipo + ", " + p.nombre + "\n";
+            //txtConsola.Text += "********************* \n";
+            //for (int i = 0; i < Metodo_Funcion.listaMetodoFuncion.Count; i++)
+            //{
+            //    MF m = (MF)Metodo_Funcion.listaMetodoFuncion[i];
+            //    txtConsola.Text += " -> " + m.tipo + ", " + m.nombre + "\n";
+            //    for (int j = 0; j < m.parametro.Count; j++)
+            //    {
+            //        Parametro p = (Parametro)m.parametro[j];
+            //        txtConsola.Text += "        -" + p.tipo + ", " + p.nombre + "\n";
 
-                }
-            }
+            //    }
+            //}
             txtConsola.Text += "\n ********************* \n\n";
         }
 
@@ -239,6 +239,8 @@ namespace SBScript
             Metodo_Funcion.listaMetodoFuncion.Clear();
             Reporte.errores.Clear();
             txtConsola.Clear();
+            Variables.nivelAmbito = 0;
+            Variables.pilaAmbito.Clear();
         }
 
         private void btnReporte_Click(object sender, EventArgs e)

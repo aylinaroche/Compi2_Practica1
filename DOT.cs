@@ -102,7 +102,7 @@ namespace SBScript
                 {                
                     if (hijos.ChildNodes.ElementAt(1).Token.Text == "&&" || hijos.ChildNodes.ElementAt(1).Token.Text == "||" || hijos.ChildNodes.ElementAt(1).Token.Text == "|&")
                     {
-                        grafo = grafo + nombrehijo + "[ color=blue, label=\"" + escapar(hijos.ChildNodes.ElementAt(1).Token.Text) + " | (Logica) \"];\n";
+                        grafo = grafo + nombrehijo + "[ color=purple, label=\"" + escapar(hijos.ChildNodes.ElementAt(1).Token.Text) + " | (Logica) \"];\n";
                     }
                     else if (hijos.ChildNodes.ElementAt(1).Token.Text == "==" || hijos.ChildNodes.ElementAt(1).Token.Text == "!=" || hijos.ChildNodes.ElementAt(1).Token.Text == "<" || hijos.ChildNodes.ElementAt(1).Token.Text == ">" || hijos.ChildNodes.ElementAt(1).Token.Text == "<=" || hijos.ChildNodes.ElementAt(1).Token.Text == ">=")
                     {

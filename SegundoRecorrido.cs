@@ -15,13 +15,14 @@ namespace SBScript
     class SegundoRecorrido
     {
         public static int contador = 0;
-        public static Boolean boolean = false;
-        public static String sentencia = "";
-        public static String retorno = "";
-        public static String tipo = "";
-        public static Boolean continuar = false;
-        public static Boolean detener = false;
-        public static Boolean retornar = false;
+        public static Boolean boolean = false; //Boleano auxiliar
+        public static String sentencia = "";   //Sirve para la sentencia del switch
+        public static String retorno = "";     //Retorna  un valor
+        public static String tipo = "";         //Tipo del switch
+        public static Boolean continuar = false;//Si existe continuar
+        public static Boolean detener = false;  //Si existe Detener
+        public static Boolean retornar = false; //Si existe retornar
+        public static Boolean esBool = false;   //Para imprimir true || false en vez de 1 o 0
 
         public static String action(ParseTreeNode nodo)
         {
@@ -63,7 +64,7 @@ namespace SBScript
                             {
                                 for (int i = 0; i < var.Length - 1; i++)
                                 {
-                                    Variables.declararVariable(tipo, var[i], asig, ambito);
+                                    Variables.crearVariable(tipo, var[i], asig, ambito);
                                 }
                             }
                             else
@@ -121,6 +122,13 @@ namespace SBScript
                             String cadena = action(nodo.ChildNodes[0]);
                             String indice = "{" + contador + "}";
                             String expr = action(nodo.ChildNodes[2]);
+                            if (esBool == true)
+                            {
+                                if (expr == "1")
+                                    expr = "true";
+                                else if (expr == "0")
+                                    expr = "false";
+                            }
                             try
                             {
                                 cadena = cadena.Replace(indice, expr);
@@ -205,9 +213,12 @@ namespace SBScript
                         else if (nodo.ChildNodes.Count == 2)
                         {
                             String ambito = Variables.pilaAmbito.Peek().ToString();
+                            Boolean b = false;
                             if (nodo.ChildNodes[0].Term.Name.ToString() == "Detener")
                             {
-                                if (ambito == "For" || ambito == "Mientras" || ambito == "Hasta" || ambito == "Selecciona")
+                                if (Variables.pilaAmbito.Contains("For") || Variables.pilaAmbito.Contains("Hasta") || Variables.pilaAmbito.Contains("Mientras") || Variables.pilaAmbito.Contains("Selecciona"))
+                                    b = true;
+                                if (b)
                                 {
                                     detener = true;
                                 }
@@ -219,7 +230,9 @@ namespace SBScript
                             }
                             else
                             {
-                                if (ambito == "For" || ambito == "Mientras" || ambito == "Hasta")
+                                if (Variables.pilaAmbito.Contains("For") || Variables.pilaAmbito.Contains("Hasta") || Variables.pilaAmbito.Contains("Mientras"))
+                                    b = true;
+                                if (b)
                                 {
                                     continuar = true;
                                 }
@@ -254,16 +267,6 @@ namespace SBScript
                         }
                         break;
                     }
-                case "MAIN":
-                    {
-                        Metodo_Funcion.parametros.Clear();
-                        if (nodo.ChildNodes.Count == 6)
-                        {
-                            Metodo_Funcion.agregarMF("MAIN", "MAIN", "", nodo.ChildNodes[4], null);
-                        }
-                        break;
-                    }
-
                 case "LLAMADA(":
                     {
                         Metodo_Funcion.parametrosTemp.Clear();
@@ -323,9 +326,7 @@ namespace SBScript
                                     Reporte.agregarMensajeError("El metodo/funcion no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 }
                             }
-
-
-                        }
+}
                         else if (nodo.ChildNodes.Count == 5)
                         {
                             String[] dato = (nodo.ChildNodes.ElementAt(0).ToString().Split(' '));
@@ -349,6 +350,7 @@ namespace SBScript
                         Metodo_Funcion.parametrosTemp.Clear();
                         result = retorno;
                         retorno = "";
+                        retornar = false;
                         break;
                     }
                 case "TipoPARAMETRO":
@@ -457,7 +459,7 @@ namespace SBScript
                                 {
                                     w = true;
                                 }
-                                Variables.pilaAmbito.Push("Else");
+                                Variables.pilaAmbito.Push("Mientras");
                                 Variables.nivelAmbito += 1;
                                 while (w)
                                 {
@@ -474,13 +476,12 @@ namespace SBScript
                                         w = false;
                                     }
                                     limite += 1;
-                                    if (limite == 100)
+                                    if (limite == 10000)
                                         break;
 
                                     if (detener == true)
                                         w = false;
                                 }
-
                                 detener = false;
                                 continuar = false;
                                 Variables.eliminarAmbito();
@@ -494,7 +495,7 @@ namespace SBScript
                                 {
                                     w = false;
                                 }
-                                Variables.pilaAmbito.Push("Else");
+                                Variables.pilaAmbito.Push("Hasta");
                                 Variables.nivelAmbito += 1;
                                 while (!w) //falso
                                 {
@@ -511,7 +512,7 @@ namespace SBScript
                                         w = false;
                                     }
                                     limit += 1;
-                                    if (limit == 100)
+                                    if (limit == 10000)
                                         break;
                                     if (detener == true)
                                         w = true;
@@ -638,6 +639,7 @@ namespace SBScript
                                 {
                                     valor -= 1;
                                 }
+                                PrimerRecorrido.concatenar = false;
                                 Variables.asignarVariable(dato[0], valor.ToString(), ambito);
                                 condicion = action(nodo.ChildNodes[7]);
                                 if (condicion == "1" || condicion == "true")
@@ -649,7 +651,7 @@ namespace SBScript
                                     f = false;
                                 }
                                 limite += 1;
-                                if (limite == 100)
+                                if (limite == 10000)
                                     break;
                                 if (detener == true)
                                     f = false;
@@ -714,6 +716,7 @@ namespace SBScript
                         PrimerRecorrido.concatenar = true;
                         String cadena = dato[0].Substring(0, dato[0].Length - 1);
                         Listas.expresion += cadena;
+                        esBool = false;
                         return cadena;
                     }
                     else if (dato[1] == "numero)")
@@ -721,6 +724,7 @@ namespace SBScript
                         String n = Listas.quitarEspaciosFinal(dato[0]);
                         PrimerRecorrido.concatenar = false;
                         Listas.expresion += n;
+                        esBool = false;
                         return n;
                     }
                     else if (dato[1] == "id)")
@@ -730,25 +734,25 @@ namespace SBScript
                         if (v != null)
                         {
                             if (v.tipo == "String")
-                            {
                                 PrimerRecorrido.concatenar = true;
-                            }
+                            if (v.tipo == "Bool")
+                                esBool = true;
                             return v.valor;
                         }
                         else
                         {
                             Reporte.agregarMensajeError("El id '" + dato[0] + "' no existe", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                            // MessageBox.Show("ERROR"); //No encuentra el id
                             PrimerRecorrido.concatenar = true;
                             return "";
                         }
-                        //   return "";
+
                     }
                     else if (dato[1] == "Keyword)")
                     {
                         Listas.expresion += dato[0];
                         boolean = true;
                         PrimerRecorrido.concatenar = false;
+                        esBool = true;
                         if (dato[0] == "true " || dato[0] == "true")
                         {
                             return "1";
@@ -799,6 +803,7 @@ namespace SBScript
 
                         case "! ":
                             String r = action(root.ChildNodes[1]);
+                            esBool = true;
                             if (r == "0" || r == "false")
                             {
                                 return "1";
@@ -819,65 +824,57 @@ namespace SBScript
                     String resultado = "";
                     String E1 = "";
                     String E2 = "";
-                    Double var1, var2;
-                    String s = root.ChildNodes.ElementAt(1).ToString().Substring(0, 2);
-                    switch (s)
+                    String[] s = root.ChildNodes.ElementAt(1).ToString().Split(' ');
+                    switch (s[0])
                     {
 
-                        case "+ ": //E+E
+                        case "+": //E+E
                             boolean = false;
                             E1 = expresion(root.ChildNodes.ElementAt(0));
-                            Boolean c1 = PrimerRecorrido.concatenar;
-                            Boolean b1 = boolean;
+                            Boolean c1 = PrimerRecorrido.concatenar; //Para ver si es cadena o numero
+                            Boolean b1 = boolean; //No recuerdo para que era
                             boolean = false;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             Boolean c2 = PrimerRecorrido.concatenar;
                             Boolean b2 = boolean;
-                            if (b1 == false || b2 == false)
+                            if (b1 == false || b2 == false)//Si ambos son bool
                             {
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
+
                                 if (c1 == true || c2 == true)
                                 {
-                                    if (E1 == "" || E2 == "")
-                                    {
-                                        Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                        return "";
-                                    }
-                                    else
-                                    {
-                                        resultado = E1 + E2;
-                                        PrimerRecorrido.concatenar = true;
-                                        return resultado;
-                                    }
+                                    esBool = false;
+                                    resultado = E1 + E2;
+                                    PrimerRecorrido.concatenar = true;
+                                    return resultado;
                                 }
                                 else
                                 {
-                                    if (E1 == "" || E2 == "")
+                                    try
                                     {
-                                        Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
-                                        return "";
+                                        esBool = false;
+                                        Double v1 = Convert.ToDouble(E1);
+                                        Double v2 = Convert.ToDouble(E2);
+                                        Double r = v1 + v2;
+                                        resultado = r.ToString();
+                                        PrimerRecorrido.concatenar = false;
+                                        return resultado;
                                     }
-                                    else
+                                    catch (Exception e)
                                     {
-                                        try
-                                        {
-                                            Double v1 = Convert.ToDouble(E1);
-                                            Double v2 = Convert.ToDouble(E2);
-                                            Double r = v1 + v2;
-                                            resultado = r.ToString();
-                                            PrimerRecorrido.concatenar = false;
-                                            return resultado;
+                                        MessageBox.Show("E");
+                                        return "";
 
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            MessageBox.Show("E");
-                                            return "";
-                                        }
                                     }
                                 }
                             }
                             else
                             {
+                                esBool = true;
                                 if (E1 == "1" || E2 == "1")
                                 {
                                     return "1";
@@ -885,20 +882,24 @@ namespace SBScript
                                 return "0";
                             }
 
-
-                        case "- ": //E-E
+                        case "-": //E-E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            if (c1 == false && c2 == false)
                             {
                                 try
                                 {
+                                    esBool = false;
                                     Double r = Convert.ToDouble(E1) - Convert.ToDouble(E2);
                                     resultado = r.ToString();
                                     return resultado;
-
                                 }
                                 catch (Exception e)
                                 {
@@ -911,15 +912,21 @@ namespace SBScript
                                 Reporte.agregarMensajeError("No se puede realizar la resta", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 return "";
                             }
-                        case "/ ": //E/E
+                        case "/": //E/E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            if (c1 == false && c2 == false)
                             {
                                 try
                                 {
+                                    esBool = false;
                                     Double r = Convert.ToDouble(E1) / Convert.ToDouble(E2);
                                     resultado = r.ToString();
                                     if (resultado == "NaN" || resultado == "∞")
@@ -941,20 +948,25 @@ namespace SBScript
                                 Reporte.agregarMensajeError("No se puede realizar la divison", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 return "";
                             }
-                        case "* ": //E*E
+                        case "*": //E*E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            if (c1 == false && c2 == false)
                             {
                                 try
                                 {
+                                    esBool = false;
                                     Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
                                     resultado = r.ToString();
                                     return resultado;
-
-                                }
+}
                                 catch (Exception e)
                                 {
                                     MessageBox.Show("E");
@@ -966,15 +978,21 @@ namespace SBScript
                                 Reporte.agregarMensajeError("No se puede realizar la multiplicacion", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 return "";
                             }
-                        case "% ": //E*E
+                        case "%": //E*E
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             c1 = PrimerRecorrido.concatenar;
                             E2 = expresion(root.ChildNodes.ElementAt(2));
                             c2 = PrimerRecorrido.concatenar;
-                            if (c1 == false || c2 == false)
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            if (c1 == false && c2 == false)
                             {
                                 try
                                 {
+                                    esBool = false;
                                     Double r = Convert.ToDouble(E1) % Convert.ToDouble(E2);
                                     resultado = r.ToString();
                                     if (resultado == "NaN" || resultado == "∞")
@@ -996,14 +1014,55 @@ namespace SBScript
                                 Reporte.agregarMensajeError("No se puede realizar el modulo", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
                                 return "";
                             }
+                        case "^": //E*E
+                            E1 = expresion(root.ChildNodes.ElementAt(0));
+                            c1 = PrimerRecorrido.concatenar;
+                            E2 = expresion(root.ChildNodes.ElementAt(2));
+                            c2 = PrimerRecorrido.concatenar;
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            if (c1 == false && c2 == false)
+                            {
+                                try
+                                {
+                                    esBool = false;
+                                    Double r = Math.Pow(Convert.ToDouble(E1), Convert.ToDouble(E2));
+                                    resultado = r.ToString();
+                                    if (resultado == "NaN" || resultado == "∞")
+                                    {
+                                        Reporte.agregarMensajeError("Error al operar potencia con '0'", "Error Ejecucion", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                        return "0";
+                                    }
+                                    return resultado;
 
-                        case "> ":
+                                }
+                                catch (Exception e)
+                                {
+                                    MessageBox.Show("E");
+                                    return "";
+                                }
+                            }
+                            else
+                            {
+                                Reporte.agregarMensajeError("No se puede realizar la potencia", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                        case ">":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1039,13 +1098,19 @@ namespace SBScript
                                 return "error";
                             }
 
-                        case "< ":
+                        case "<":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1081,12 +1146,18 @@ namespace SBScript
                                 return "error";
                             }
                         case ">=":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1122,12 +1193,18 @@ namespace SBScript
                                 return "error";
                             }
                         case "<=":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1163,12 +1240,18 @@ namespace SBScript
                                 return "error";
                             }
                         case "==":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1204,12 +1287,18 @@ namespace SBScript
                                 return "error";
                             }
                         case "!=":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1244,13 +1333,19 @@ namespace SBScript
                                 MessageBox.Show("E");
                                 return "error";
                             }
-                        case "~ ":
+                        case "~":
+                            esBool = true;
                             try
                             {
                                 E1 = expresion(root.ChildNodes.ElementAt(0));
                                 c1 = PrimerRecorrido.concatenar;
                                 E2 = expresion(root.ChildNodes.ElementAt(2));
                                 c2 = PrimerRecorrido.concatenar;
+                                if (E1 == "" || E2 == "")
+                                {
+                                    Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                    return "";
+                                }
                                 if (c1 == true || c2 == true)
                                 {
                                     PrimerRecorrido.concatenar = false;
@@ -1287,13 +1382,18 @@ namespace SBScript
                                 return "error";
                             }
                         case "&&":
-
+                            esBool = true;
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             E2 = expresion(root.ChildNodes.ElementAt(2));
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
                             try
                             {
                                 Double r = Convert.ToDouble(E1) * Convert.ToDouble(E2);
-                                if (E1 == "1" && E2 == "1" || E1 == "0" && E2 == "0")
+                                if (E1 == "1" && E2 == "1")
                                 {
                                     return "1";
                                 }
@@ -1310,8 +1410,14 @@ namespace SBScript
                             }
 
                         case "||":
+                            esBool = true;
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             E2 = expresion(root.ChildNodes.ElementAt(2));
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
                             try
                             {
                                 if (E1 == "1" || E2 == "1")
@@ -1330,8 +1436,40 @@ namespace SBScript
                                 return "";
                             }
                         case "!&":
+                            esBool = true;
                             E1 = expresion(root.ChildNodes.ElementAt(0));
                             E2 = expresion(root.ChildNodes.ElementAt(2));
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
+                            try
+                            {
+                                if (E1 == E2)
+                                {
+                                    return "0";
+                                }
+                                else
+                                {
+                                    return "1";
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                MessageBox.Show("E");
+                                return "";
+                            }
+                        case "|&":
+                            esBool = true;
+                            E1 = expresion(root.ChildNodes.ElementAt(0));
+                            E2 = expresion(root.ChildNodes.ElementAt(2));
+                            if (E1 == "" || E2 == "")
+                            {
+                                Reporte.agregarMensajeError("No se ha inicializado la variable", "Error Semantico", Listas.nodoActual.Token.Location.Line, Listas.nodoActual.Token.Location.Column);
+                                return "";
+                            }
                             try
                             {
                                 if (E1 == E2)
@@ -1351,7 +1489,7 @@ namespace SBScript
                             }
 
                         default: //(E)
-                            return "0";
+                            return expresion(root.ChildNodes.ElementAt(1));
                     }
 
             }
